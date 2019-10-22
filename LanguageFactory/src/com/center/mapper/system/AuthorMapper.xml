@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.system.AuthorMapper">
+	<sql id="queryAuthorWhere">
+		<if test="roleId != null and roleId != 0">
+			and tsr.roleId = #{roleId}
+		</if>
+		<if test="createTimeBegin!=null and createTimeBegin!=''">
+		<![CDATA[
+			and STR_TO_DATE(tsr.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+		]]>
+		</if>
+		<if test="createTimeEnd!=null and createTimeEnd!=''">
+		<![CDATA[
+			and STR_TO_DATE(tsr.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+		]]>
+		</if>
+	</sql>
+	
+	<select id="queryAuthorList" resultType="author" parameterType="authorQuery">
+		<!-- select tsa.authorId, tsa.roleId, group_concat(tsa.menuId) menuIds, tsr.roleName, group_concat(tsm.menuName) menuNames, tsu.userName createByName 
+		from tb_system_author tsa
+		left join tb_system_role tsr on tsa.roleId = tsr.roleId
+		left join tb_system_menu tsm on tsa.menuId = tsm.menuId
+		left join tb_system_user tsu on tsa.createBy = tsu.userId -->
+		select tsr.roleId, tsr.roleName, tsr.createBy, tsu.userName createByName, tsr.createTime, tsa.remark, group_concat(tsa.menuId order by tsa.menuId) menuIds, group_concat(tsm.menuName order by tsa.menuId) menuNames
+		from tb_system_role tsr 
+		left join tb_system_author tsa on tsr.roleId = tsa.roleId
+		left join tb_system_menu tsm on tsa.menuId = tsm.menuId
+		left join tb_system_user tsu on tsr.createBy = tsu.userId
+		<where>
+			<include refid="queryAuthorWhere"></include>
+		</where>
+		group by tsr.roleId
+		order by tsr.roleId
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryAuthorCount" resultType="long" parameterType="authorQuery">
+		select count(1) from (
+			<!-- select 1 from tb_system_author tsa
+			left join tb_system_role tsr on tsa.roleId = tsr.roleId
+			left join tb_system_menu tsm on tsa.menuId = tsm.menuId
+			left join tb_system_user tsu on tsa.createBy = tsu.userId -->
+			
+			select 1 from tb_system_role tsr 
+			left join tb_system_author tsa on tsr.roleId = tsa.roleId
+			left join tb_system_menu tsm on tsa.menuId = tsm.menuId
+			left join tb_system_user tsu on tsr.createBy = tsu.userId
+			<where>
+				<include refid="queryAuthorWhere"></include>
+			</where>
+			group by tsr.roleId
+		) a
+	</select>
+
+	<insert id="addAuthor" parameterType="author"
+		useGeneratedKeys="true" keyProperty="authorId">
+		insert into tb_system_author(roleId,menuId,createBy,remark)
+		values(#{roleId},#{menuId},#{createBy},#{remark})
+	</insert>
+
+	<delete id="deleteAuthor" parameterType="int">
+		delete from
+		tb_system_author where authorId = #{authorId}
+	</delete>
+	
+	<delete id="deleteAuthorByRole" parameterType="int">
+		delete from
+		tb_system_author where roleId = #{roleId}
+	</delete>
+
+	<update id="updateAuthor" parameterType="author">
+		UPDATE tb_system_author
+		<trim prefix="set" suffixOverrides=",">
+			<if test="roleId != null and roleId != 0">
+				roleId = #{roleId},
+			</if>
+			<if test="menuId != null and menuId != 0">
+				menuId = #{menuId},
+			</if>
+			<if test="remark != null and remark != ''">
+				remark = #{remark},
+			</if>
+		</trim>
+		WHERE authorId = #{authorId}
+	</update>
+
+	<select id="queryModuleByRole" resultType="module" parameterType="int">
+		select tsm.moduleId,tmd.moduleName,tmd.moduleIcon from tb_system_author tsj 
+		left join tb_system_menu tsm on tsj.menuId = tsm.menuId
+		left join tb_system_module tmd on tsm.moduleId = tmd.moduleId
+		where tsj.roleId = #{value}
+		and tsm.menuId != ''
+		group by tsm.moduleId,tmd.moduleName
+		order by tsm.moduleId, tsm.menuOrder asc
+	</select>
+
+	<select id="queryMenuByRole" resultType="menu" parameterType="int">
+		select tsm.*,tmd.moduleName from tb_system_author tsj 
+		left join tb_system_menu tsm on tsj.menuId = tsm.menuId
+		left join tb_system_module tmd on tsm.moduleId = tmd.moduleId
+		where tsj.roleId = #{value}
+		order by tsm.moduleId, tsm.menuId asc
+	</select>
+</mapper>

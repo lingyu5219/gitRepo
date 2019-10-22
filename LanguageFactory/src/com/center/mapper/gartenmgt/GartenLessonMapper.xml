@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.gartenmgt.GartenLessonMapper">
+
+	<delete id="deleteAllSelectedLesson">
+		delete from tb_garten_lesson where gartenId = #{gartenId};
+	</delete>
+	<insert id="addSelectedLesson">
+		insert into tb_garten_lesson(lessionId,gartenId)values
+		<foreach collection="lessonIdList" item="lid" separator="," >
+			(#{lid},#{gartenId})
+		</foreach>
+	</insert>
+	
+	<delete id="deleteSelectedLesson">
+		delete from tb_garten_lesson where lessionId=#{lessonId} and gartenId=#{gartenId}
+	</delete>
+	
+	<insert id="addLesson2Selected">
+		insert into tb_garten_lesson(lessionId,gartenId)values
+		<foreach collection="lessonIdList" item="lid" separator=",">
+			(#{lid},#{gartenId})
+		</foreach>
+	</insert>
+</mapper>

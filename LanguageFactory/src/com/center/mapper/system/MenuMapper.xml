@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.system.MenuMapper">
+     <sql id="queryMenuWhere">
+		<if test="menuName != null and menuName != ''">
+			and tm.menuName like CONCAT(CONCAT('%', #{menuName}),'%')
+		</if>
+		
+		<if test="moduleId != null and moduleId != 0">
+			and tm.moduleId = #{moduleId}
+		</if>
+		
+		<if test="isFork != null and isFork != 0">
+			and tm.isFork = #{isFork}
+		</if>
+		
+		<if test="createTimeBegin!=null and createTimeBegin!=''">
+			<![CDATA[
+			and STR_TO_DATE(tm.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd!=null and createTimeEnd!=''">
+			<![CDATA[
+			and STR_TO_DATE(tm.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryMenu" resultType="menu" parameterType="menuQuery">
+		SELECT * FROM tb_system_menu tm
+		<where>
+  			<include refid="queryMenuWhere"></include>
+  		</where>
+  		order by tm.menuId desc
+	</select>
+	
+	<select id="queryMenuList" resultType="menu" parameterType="menuQuery">
+		select tm.*, tmo.moduleName, tu.userName,tm2.menuName parentMenuName FROM tb_system_menu tm
+		left join tb_system_module tmo on tm.moduleId = tmo.moduleId
+		left join tb_system_user tu on tm.createBy = tu.userId
+		left join tb_system_menu tm2 on tm.parentId = tm2.menuId
+		<where>
+  			<include refid="queryMenuWhere"></include>
+  		</where>
+  		order by tm.moduleId, tm.menuId asc
+  		limit #{start},#{length}
+	</select>
+	<select id="queryMenuCount" resultType="long" parameterType="menuQuery">
+		select count(1) from tb_system_menu tm
+		left join tb_system_module tmo on tm.moduleId = tmo.moduleId
+		left join tb_system_user tu on tm.createBy = tu.userId
+		left join tb_system_menu tm2 on tm.parentId = tm2.menuId
+		<where>
+  			<include refid="queryMenuWhere"></include>
+  		</where>
+  		order by tm.moduleId, tm.menuId asc
+	</select>
+	<insert id="addMenu" parameterType="menu" useGeneratedKeys="true"
+		keyProperty="menuId">
+		Insert into
+		tb_system_menu(menuName,moduleId,isFork,location,createBy,remark)
+		values(#{menuName},#{moduleId},#{isFork},#{location},#{createBy},#{remark})
+	</insert>
+	<delete id="deleteMenu" parameterType="int">
+		delete from tb_system_menu
+		where menuId = #{menuId}
+	</delete>
+	<update id="updateMenu" parameterType="menu">
+		UPDATE tb_system_menu
+		<trim prefix="set" suffixOverrides=",">
+			<if test="menuName != null and menuName != ''">menuName=#{menuName},</if>
+			<if test="moduleId != null and moduleId != 0">moduleId=#{moduleId},</if>
+			<if test="isFork != null and isFork != 0">isFork=#{isFork},</if>
+			<if test="location != null and location != ''">location=#{location},</if>
+			<if test="remark != null and remark != ''">remark=#{remark},</if>
+		</trim>
+		WHERE menuId=#{menuId}
+	</update>
+
+
+
+</mapper>

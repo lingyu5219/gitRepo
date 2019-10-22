@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.system.RoleMapper">
+
+	<sql id="queryRoleWhere">
+		<if test="roleName != null and roleName != ''">
+			and tsr.roleName like CONCAT(CONCAT('%', #{roleName}),'%')
+		</if>
+		<if test="isDefault != null and isDefault != 0">
+			and tsr.isDefault = #{isDefault}
+		</if>
+		<if test="createTimeBegin!=null and createTimeBegin!=''">
+		<![CDATA[
+			and STR_TO_DATE(tsr.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+		]]>
+		</if>
+		<if test="createTimeEnd!=null and createTimeEnd!=''">
+		<![CDATA[
+			and STR_TO_DATE(tsr.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+		]]>
+		</if>
+	</sql>
+	
+	<select id="queryRole" resultType="role" parameterType="roleQuery">
+		SELECT * FROM tb_system_role tsr
+		<where>
+			<include refid="queryRoleWhere"></include>
+		</where>
+	</select>
+	
+	<select id="queryRoleList" resultType="role" parameterType="roleQuery">
+		select tsr.*,tsu.userName createByName from tb_system_role tsr
+		left join tb_system_user tsu on tsr.createBy = tsu.userId
+		<where>
+			<include refid="queryRoleWhere"></include>
+		</where>
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryRoleCount" resultType="long" parameterType="roleQuery">
+		select count(1) from tb_system_role tsr
+		left join tb_system_user tsu on tsr.createBy = tsu.userId
+		<where>
+			<include refid="queryRoleWhere"></include>
+		</where>
+	</select>
+
+	<select id="queryRoleNameByRoldId" parameterType="int" resultType="string">
+		select roleName from tb_system_role where roleId=#{roleId}
+	</select>
+
+	<insert id="addRole" parameterType="role" useGeneratedKeys="true" keyProperty="roleId">
+		Insert into
+		tb_system_role(roleName,createBy,remark)
+		values(#{roleName},#{createBy},#{remark})
+	</insert>
+
+	<delete id="deleteRole" parameterType="int">
+		delete from tb_system_role
+		where roleId = #{roleId}
+	</delete>
+	
+	<delete id="deleteRole2" parameterType="int">
+		delete from
+		tb_system_author where roleId = #{roleId}
+	</delete>
+	
+	<update id="updateRole" parameterType="role">
+		UPDATE tb_system_role
+		<trim prefix="set" suffixOverrides=",">
+			<if test="roleName != null and roleName != ''">
+				roleName = #{roleName},
+			</if>
+			<if test="isDefault != null and isDefault != 0">
+				isDefault = #{isDefault}
+			</if>
+			<if test="remark != null and remark != ''">
+				remark = #{remark},
+			</if>
+		</trim>
+		WHERE roleId=#{roleId}
+	</update>
+</mapper>

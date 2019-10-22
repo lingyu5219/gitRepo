@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.system.UserMapper">
+	<sql id="queryUserWhere">
+		<if test="userName!=null and userName!=''">
+			and tsu.userName like CONCAT(CONCAT('%', #{userName}),'%')
+		</if>
+		<if test="userId != null and userId != 0">
+			and tsu.userId = #{userId}
+		</if>
+		<if test="roleId != null and roleId != 0">
+			and tsu.roleId = #{roleId}
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsu.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsu.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryUserList" resultType="user" parameterType="userQuery">
+		SELECT tsu.*,tsr.roleName,tsu2.userName createByName, ths.staffName
+		FROM tb_system_user tsu
+		left join tb_system_role tsr on tsu.roleId = tsr.roleId
+		left join tb_system_user tsu2 on tsu.createBy = tsu2.userId
+		left join tb_hrmgt_staff ths on tsu.staffId = ths.staffId
+		<where>
+			<include refid="queryUserWhere"></include>
+		</where>
+		order by tsu.userId
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryUserCount" resultType="long" parameterType="userQuery">
+		SELECT count(1) FROM tb_system_user tsu
+		left join tb_system_role tsr on tsu.roleId = tsr.roleId
+		left join tb_system_user tsu2 on tsu.createBy = tsu2.userId
+		left join tb_hrmgt_staff ths on tsu.staffId = ths.staffId
+		<where>
+			<include refid="queryUserWhere"></include>
+		</where>
+		order by tsu.userId
+	</select>
+	
+	<select id="staffIsRelatedByUser" resultType="long" parameterType="int">
+		SELECT count(1) FROM tb_system_user 
+		where staffId = #{staffId}
+	</select>
+	
+	<select id="staffIsRelatedByUserNotSelf" resultType="long" parameterType="userQuery">
+		SELECT count(1) FROM tb_system_user 
+		where staffId = #{staffId}
+		and userId != #{userId}
+	</select>
+	
+	<select id="userNameExist" resultType="long" parameterType="String">
+		SELECT count(1) FROM tb_system_user 
+		where userName = #{userName}
+	</select>
+	
+	<select id="userNameExistNotSelf" resultType="long" parameterType="userQuery">
+		SELECT count(1) FROM tb_system_user 
+		where userName = #{userName}
+		and userId != #{userId}
+	</select>
+	
+	<select id="checkUser" resultType="user" parameterType="userQuery">
+		SELECT * FROM tb_system_user 
+		where userName = #{userName} and userPassword = #{userPassword}
+	</select>
+	
+	<select id="checkUserPassword" resultType="int" parameterType="user">
+		SELECT count(1) FROM tb_system_user 
+		where userId = #{userId} and userPassword = #{userPassword}
+	</select>
+	
+	<insert id="addUser" parameterType="user" useGeneratedKeys="true" keyProperty="userId">
+		insert into
+		tb_system_user(roleId,userName,userPassword,picPath,staffId,createBy,remark)
+		values(#{roleId},#{userName},#{userPassword},#{picPath},
+		<choose>
+            <when test="staffId != null and staffId != 0">
+                #{staffId},
+            </when>
+            <otherwise>
+                null,
+            </otherwise>
+        </choose>
+		#{createBy},#{remark})
+	</insert>
+	
+	<delete id="delUser" parameterType="int">
+		delete from tb_system_user where userId = #{userId}
+	</delete>
+	
+	<update id="updateUser" parameterType="user">
+		UPDATE tb_system_user
+		<trim prefix="set" suffixOverrides=",">
+			<if test="userName!=null and userName!=''">
+				userName=#{userName},
+			</if>
+			<if test="userPassword != null and userPassword != ''">
+				userPassword=#{userPassword},
+			</if>
+			<if test="roleId != null and roleId != 0">
+				roleId=#{roleId},
+			</if>
+			<if test="picPath != null and picPath != ''">
+				picPath=#{picPath},
+			</if>
+			<if test="staffId != null and staffId != 0">
+				staffId=#{staffId},
+			</if>
+			<if test="remark != null and remark != ''">
+				remark=#{remark}
+			</if>
+		</trim>
+		WHERE userId=#{userId}
+	</update>
+</mapper>

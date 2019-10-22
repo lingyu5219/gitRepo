@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.hrmgt.PositionMapper">
+
+    <sql id="queryPositionWhere">
+		<if test="positionName!=null and positionName!=''">
+			and thp.positionName like CONCAT(CONCAT('%', #{positionName}),'%')
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(thp.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(thp.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+    
+	<select id="queryPosition" parameterType="positionQuery" resultType="position">
+		SELECT thp.*,tsu.userName FROM tb_hrmgt_position thp
+		left join tb_system_user tsu on thp.createBy = tsu.userId
+		<where>
+			<include refid="queryPositionWhere"></include>
+		</where>
+		order by thp.positionId
+	</select>
+	
+	<!--查询个数-->
+	<select id="queryPositionCount" parameterType="positionQuery" resultType="long">
+		SELECT count(1) FROM tb_hrmgt_position thp
+		left join tb_system_user tsu on thp.createBy = tsu.userId
+		<where>
+			<include refid="queryPositionWhere"></include>
+		</where>
+		order by thp.positionId asc
+	</select>
+	
+	<!-- 分页查询所有未删除模块信息 -->
+	<select id="queryPositionList" parameterType="positionQuery" resultType="position">
+		SELECT thp.*,tsu.userName FROM tb_hrmgt_position thp
+		left join tb_system_user tsu on thp.createBy = tsu.userId
+		<where>
+			<include refid="queryPositionWhere"></include>
+		</where>
+		order by thp.positionId asc
+		limit #{start},#{length}
+	</select>
+	
+	<!-- 插入新的数据 -->
+	 <insert id="addPosition" parameterType="position" useGeneratedKeys="true" keyProperty="positionId">
+		insert into tb_hrmgt_position (positionName,createBy,remark) 
+		values(#{positionName},#{createBy},#{remark})
+	</insert> 
+	
+	<!-- 修改数据 -->
+	<update id="updatePosition" parameterType="position">
+		update tb_hrmgt_position
+		<trim prefix="set" suffixOverrides=",">
+			<if test="positionName!=null and positionName!=''">
+				positionName = #{positionName},
+			</if>
+			<if test="remark != null and remark != ''">
+				remark=#{remark}
+			</if>
+		</trim>
+		WHERE positionId=#{positionId}
+	</update>
+	
+	<!--删除模块-->
+	<delete id="delPosition" parameterType="int">
+		delete from tb_hrmgt_position where positionId = #{positionId}
+	</delete>
+</mapper>

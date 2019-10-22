@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.system.ModuleMapper">
+	<sql id="queryModuleWhere">
+		<if test="moduleName!=null and moduleName!=''">
+			and tsm.moduleName like CONCAT(CONCAT('%', #{moduleName}),'%')
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsm.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsm.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryModule" parameterType="moduleQuery" resultType="Module">
+		SELECT tsm.*,tsu.userName FROM tb_system_module tsm
+		left join tb_system_user tsu on tsm.createBy = tsu.userId
+		<where>
+			<include refid="queryModuleWhere"></include>
+		</where>
+		order by tsm.moduleId
+	</select>
+	
+	<!--查询模块个数-->
+	<select id="queryModuleCount" parameterType="moduleQuery" resultType="long">
+		SELECT count(1) FROM tb_system_module tsm
+		left join tb_system_user tsu on tsm.createBy = tsu.userId
+		<where>
+			<include refid="queryModuleWhere"></include>
+		</where>
+		order by tsm.moduleId asc
+	</select>
+	
+	<!-- 分页查询所有未删除模块信息 -->
+	<select id="queryModuleList" parameterType="moduleQuery" resultType="Module">
+		SELECT tsm.*,tsu.userName FROM tb_system_module tsm
+		left join tb_system_user tsu on tsm.createBy = tsu.userId
+		<where>
+			<include refid="queryModuleWhere"></include>
+		</where>
+		order by tsm.moduleId asc
+		limit #{start},#{length}
+	</select>
+	
+	<!-- 插入新的模块数据 -->
+	 <insert id="addModule" parameterType="Module" useGeneratedKeys="true" keyProperty="moduleId">
+		insert into tb_system_module (moduleName,moduleIcon,createBy,remark) 
+		values(#{moduleName},#{moduleIcon},#{createBy},#{remark})
+	</insert> 
+	
+	<!-- 修改模块数据 -->
+	<update id="updateModule" parameterType="module">
+		update tb_system_module
+		<trim prefix="set" suffixOverrides=",">
+			<if test="moduleName!=null and moduleName!=''">
+				moduleName = #{moduleName},
+			</if>
+			<if test="moduleIcon != null">
+				moduleIcon=#{moduleIcon},
+			</if>
+			<if test="remark != null">
+				remark=#{remark}
+			</if>
+		</trim>
+		WHERE moduleId=#{moduleId}
+	</update>
+	
+	<!--删除模块-->
+	<delete id="delModule" parameterType="int">
+		delete from tb_system_module where moduleId = #{moduleId}
+	</delete>
+	
+</mapper> 

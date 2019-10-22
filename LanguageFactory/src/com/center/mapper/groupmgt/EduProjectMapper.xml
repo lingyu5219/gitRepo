@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.groupmgt.EduProjectMapper">
+
+	<insert id="addEduProject" parameterType="com.center.po.groupmgt.EduProject" useGeneratedKeys="true" keyProperty="eduProjectId">
+		insert into tb_group_eduproject(eduProjectName,description,createBy,remark<!-- ,gartenId -->)
+		values(#{eduProjectName},#{description},#{createBy},#{remark}<!-- ,#{gartenId} -->)
+	</insert>
+	
+	<select id="queryEduProjects" parameterType="eduProjectQuery" resultType="eduProject">
+		SELECT *
+		FROM tb_group_eduproject
+    </select>
+	
+	<select id="getEduProjectList" resultType="com.center.po.groupmgt.EduProject">
+		SELECT c.*,u.userName createByName<!-- ,g.gartenName -->
+		 FROM db_kindergarten.tb_group_eduproject c
+		 left join tb_system_user u on c.createBy = u.userId
+         left join tb_orgmgt_garten g on c.gartenId = g.gartenId
+         <if test="gartenId != null and gartenId != ''">
+			left join tb_garten_eduproject ge on ge.eduProjectId=c.eduProjectId
+		</if>
+		where 1=1
+		<if test="description != null and description!=''">
+			and c.description like CONCAT(CONCAT('%', #{description}),'%')
+		</if>
+		<if test="eduProjectName != null and eduProjectName != ''">	
+			and eduProjectName like '%${eduProjectName}%'
+		</if>
+		<!-- <if test="gartenId != null and gartenId != ''">
+			and c.gartenId = #{gartenId}
+		</if> -->
+		<if test="startTime != null and startTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{startTime},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTime != null and endTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{endTime},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="selectFlag == 0">
+			<if test="gartenId != null and gartenId != ''">
+				and ge.gartenId=#{gartenId}
+			</if>
+		</if>
+		<if test="selectFlag == 1">
+		<if test="gartenId != null and gartenId != ''">
+				and c.eduProjectId not in (select eduProjectId from tb_garten_eduproject where gartenId=#{gartenId})
+			</if>
+		</if>
+		 order by c.eduProjectId
+		limit #{start},#{length}
+	</select>
+	<select id="count" resultType="java.lang.Long">
+		select count(0) 
+		FROM db_kindergarten.tb_group_eduproject c
+		 left join tb_system_user u on c.createBy = u.userId
+         left join tb_orgmgt_garten g on c.gartenId = g.gartenId
+		<if test="gartenId != null and gartenId != ''">
+			left join tb_garten_eduproject ge on ge.eduProjectId=c.eduProjectId
+		</if>
+		where 1=1
+		<if test="description != null and description!=''">
+			and c.description like CONCAT(CONCAT('%', #{description}),'%')
+		</if>
+		<if test="eduProjectName != null and eduProjectName != ''">	
+			and eduProjectName like '%${eduProjectName}%'
+		</if>
+		<!-- <if test="gartenId != null and gartenId != ''">
+			and c.gartenId = #{gartenId}
+		</if> -->
+		<if test="startTime != null and startTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{startTime},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTime != null and endTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{endTime},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="selectFlag == 0">
+			<if test="gartenId != null and gartenId != ''">
+				and ge.gartenId=#{gartenId}
+			</if>
+		</if>
+		<if test="selectFlag == 1">
+		<if test="gartenId != null and gartenId != ''">
+				and c.eduProjectId not in (select eduProjectId from tb_garten_eduproject where gartenId=#{gartenId})
+			</if>
+		</if>
+		 order by c.eduProjectId
+	</select>
+	<update id="updateEduProject">
+		update tb_group_eduproject set 
+		eduProjectName=#{eduProjectName},description=#{description},remark=#{remark}<!-- ,gartenId=#{gartenId} -->
+		 where eduProjectId = #{eduProjectId} ;
+	</update>
+	<delete id="delEduProjectById">
+		delete from tb_group_eduproject where eduProjectId = #{eduProjectId}
+	</delete>
+	<delete id="deleteSeletedEduProject">
+		delete from tb_garten_eduproject where gartenId=#{staffGartenId} and eduprojectId=#{eduProjectId}
+	</delete>
+	
+	<insert id="addEduProject2Selected">
+		insert into tb_garten_eduproject(gartenId,eduprojectId)values
+		<foreach collection="eduProjectList" item="eid" separator=",">
+			(#{gartenId},#{eid})
+		</foreach>
+	</insert>
+</mapper>

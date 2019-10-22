@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.groupmgt.StuMapper">
+	
+	<sql id="queryStuWhere">
+		<if test="stuName!=null and stuName!=''">
+			and tgs.stuName like concat(concat('%',#{stuName}),'%')
+		</if>
+		<if test="stuId != null and stuId != 0">
+			and tgs.stuId = #{stuId}
+		</if>
+		<if test="stuIdCard != null and stuIdCard != ''">
+			and tgs.stuIdCard = #{stuIdCard}
+		</if>
+		<if test="stuFatherPhone != null and stuFatherPhone != ''">
+			and tgs.stuFatherPhone = #{stuFatherPhone}
+		</if>
+		<if test="stuMatherPhone != null and stuMatherPhone != ''">
+			and tgs.stuMatherPhone = #{stuMatherPhone}
+		</if>
+		<if test="createTimeBegin!=null and createTimeBegin!=''">
+			<![CDATA[
+			and STR_TO_DATE(tgs.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd!=null and createTimeEnd!=''">
+			<![CDATA[
+			and STR_TO_DATE(tgs.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryStuCount" parameterType="stuQuery" resultType="long">
+		select count(1)
+		from tb_group_student tgs
+		<where>
+			<include refid="queryStuWhere"></include>
+		</where>
+		order by tgs.createTime desc
+	</select>
+	
+	<select id="queryStu" parameterType="stuQuery" resultType="stu">
+		select tgs.*
+		from tb_group_student tgs
+		<where>
+			<include refid="queryStuWhere"></include>
+		</where>
+		order by tgs.createTime desc
+	</select>
+	
+	<select id="queryStuList" parameterType="stuQuery" resultType="stu">
+		select tgs.*
+		from tb_group_student tgs
+		<where>
+			<include refid="queryStuWhere"></include>
+		</where>
+		order by tgs.createTime desc
+		limit #{start},#{length}
+	</select>
+	
+	<!-- 插入新的数据 -->
+	<insert id="addStu" parameterType="stu" useGeneratedKeys="true" keyProperty="stuId">
+		insert into
+		tb_group_student(stuName,stuSex,stuNation,stuBirthday,stuPermanentAddress,stuHomeAddress,stuSingle,stuMedicalHistory,stuMedicalHistoryDetail,stuIdCard,stuFatherJob,stuFatherPhone,stuMotherJob,stuMatherPhone,remark)
+		values(#{stuName},#{stuSex},#{stuNation},#{stuBirthday},#{stuPermanentAddress},#{stuHomeAddress},#{stuSingle},#{stuMedicalHistory},#{stuMedicalHistoryDetail},#{stuIdCard},#{stuFatherJob},#{stuFatherPhone},#{stuMotherJob},#{stuMatherPhone},#{remark})		
+	</insert>
+
+	<!-- 删除数据 -->
+	<delete id="delStu" parameterType="int">
+		delete from tb_group_student where stuId = #{stuId}
+	</delete>
+	
+	<!-- 修改数据 -->
+	<update id="updateStu" parameterType="stu"> 
+		update tb_group_student
+		<trim prefix="set" suffixOverrides=",">
+			<if test="stuName != null and stuName != ''">
+				stuName = #{stuName},
+			</if>
+			<if test="stuSex != null">
+				stuSex = #{stuSex},
+			</if>
+		    <if test="stuNation !=null">
+				stuNation = #{stuNation},
+			</if>
+			<if test="stuBirthday !=null and stuBirthday !=''">
+				stuBirthday = #{stuBirthday},
+			</if>
+			<if test="stuPermanentAddress != null and stuPermanentAddress != ''">
+				stuPermanentAddress = #{stuPermanentAddress},
+			</if>
+			<if test="stuHomeAddress != null and stuHomeAddress != ''">
+				stuHomeAddress = #{stuHomeAddress},
+			</if>
+			<if test="stuSingle != null">
+				stuSingle = #{stuSingle},
+			</if>
+			<if test="stuMedicalHistory != null">
+				stuMedicalHistory = #{stuMedicalHistory},
+			</if>
+			<if test="stuMedicalHistoryDetail != null and stuMedicalHistoryDetail != ''">
+				stuMedicalHistoryDetail = #{stuMedicalHistoryDetail},
+			</if>
+			<if test="stuIdCard != null and stuIdCard != ''">
+				stuIdCard = #{stuIdCard},
+			</if>
+			<if test="stuFatherJob != null">
+				stuFatherJob = #{stuFatherJob},
+			</if>
+			<if test="stuFatherPhone != null and stuFatherPhone != ''">
+				stuFatherPhone = #{stuFatherPhone},
+			</if>
+			<if test="stuMotherJob != null">
+				stuMotherJob = #{stuMotherJob},
+			</if>
+			<if test="stuMatherPhone != null and stuMatherPhone != ''">
+				stuMatherPhone = #{stuMatherPhone},
+			</if>
+			
+			<if test="remark!=null">
+				remark = #{remark},
+			</if>
+		</trim>
+		where stuId = #{stuId}
+	</update>
+	
+	<select id="stuIdCardExistNotSelf" resultType="long" parameterType="stuQuery">
+		SELECT count(1) FROM tb_group_student 
+		where stuIdCard = #{stuIdCard}
+		and stuId != #{stuId}
+	</select>
+	
+	<select id="stuIdCardExist" resultType="long" parameterType="stuQuery">
+		SELECT count(1) FROM tb_group_student 
+		where stuIdCard = #{stuIdCard}
+	</select>
+</mapper>

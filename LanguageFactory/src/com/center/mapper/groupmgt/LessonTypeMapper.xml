@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.groupmgt.LessonTypeMapper">
+	<insert id="addLessonType" parameterType="com.center.po.groupmgt.LessonType" useGeneratedKeys="true" keyProperty="lessonTypeId">
+		insert into tb_group_lessontype(lessonTypeName,description,createBy,remark)values(#{lessonTypeName},#{description},#{createBy},#{remark});
+	</insert>
+	
+	<select id="getLessonTypeList" resultType="com.center.po.groupmgt.LessonType" >
+		SELECT l.* ,u.userName createByName
+		FROM db_kindergarten.tb_group_lessontype l
+		left join tb_system_user u on l.createBy = u.userId
+		where 1=1
+		<if test="lessonTypeName != null and lessonTypeName != ''">
+			and l.lessonTypeName like '%${lessonTypeName}%'
+		</if>
+		<if test="description != null and description != ''">
+			and l.description like '%${description}%'
+		</if>
+		<if test="startTime != null and startTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(l.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{startTime},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTime != null and endTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(l.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{endTime},'%Y-%m-%d')
+			]]>
+		</if>
+		 order by l.lessonTypeId
+		limit #{start},#{length}
+	</select>
+	
+	<select id="count" resultType="java.lang.Long">
+		select count(0) 
+		FROM db_kindergarten.tb_group_lessontype l
+		left join tb_system_user u on l.createBy = u.userId
+		where 1=1
+		<if test="lessonTypeName != null and lessonTypeName != ''">
+			and l.lessonTypeName like '%${lessonTypeName}%'
+		</if>
+		<if test="description != null and description != ''">
+			and l.description like '%${description}%'
+		</if>
+		<if test="startTime != null and startTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(l.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{startTime},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTime != null and endTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(l.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{endTime},'%Y-%m-%d')
+			]]>
+		</if>
+	</select>
+	
+	<update id="updateLessonType">
+		update tb_group_lessontype set lessonTypeName=#{lessonTypeName},description=#{description},remark=#{remark} 
+		where lessonTypeId = #{lessonTypeId}
+	</update>
+	
+	<delete id="deleteLessonTypeById">
+		delete from tb_group_lessontype where lessonTypeId = #{lessonTypeId}
+	</delete>
+	
+	<select id="getSelectList" resultType="java.util.Map">
+		select lessonTypeId,lessonTypeName from tb_group_lessontype
+	</select>
+	
+	<select id="queryLessonTypeById" parameterType="int" resultType="lessonType">
+		select * from tb_group_lessontype where lessonTypeId = #{lessonTypeId}
+	</select>
+</mapper>

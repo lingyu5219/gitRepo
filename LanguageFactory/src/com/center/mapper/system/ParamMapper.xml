@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.system.ParamMapper">
+	<sql id="queryParamWhere">
+		<if test="paramType!=null and paramType!=''">
+			and tsp.paramType = #{paramType}
+		</if>
+		<if test="paramCode!=null and paramCode!=''">
+			and tsp.paramCode = #{paramCode}
+		</if>
+		<if test="paramName!=null and paramName!=''">
+			and tsp.paramName like CONCAT(CONCAT('%', #{paramName}),'%')
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsp.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsp.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryParam" parameterType="paramQuery" resultType="param">
+		select * from tb_system_param tsp
+		<where>
+			<include refid="queryParamWhere"></include>
+		</where>
+	</select>
+	
+	<select id="queryParamList" parameterType="paramQuery" resultType="param">
+		select tsp.*, tsu.userName createByName from tb_system_param tsp
+		left join tb_system_user tsu on tsp.createBy = tsu.userId
+		<where>
+			<include refid="queryParamWhere"></include>
+		</where>
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryParamCount" parameterType="paramQuery" resultType="long">
+		select count(1) from tb_system_param tsp
+		left join tb_system_user tsu on tsp.createBy = tsu.userId
+		<where>
+			<include refid="queryParamWhere"></include>
+		</where>
+	</select>
+	
+	<insert id="addParam" parameterType="param" useGeneratedKeys="true" keyProperty="paramId">
+		insert into tb_system_param (paramType,paramCode,paramName,createBy,remark)
+		values (#{paramType},#{paramCode},#{paramName},#{createBy},#{remark});
+	</insert>
+	
+	<update id="updateParam" parameterType="param">
+		update tb_system_param 
+		set paramType=#{paramType},paramCode=#{paramCode},paramName=#{paramName},remark=#{remark}
+		where paramId=#{paramId}
+	</update>
+	
+	<delete id="delParam" parameterType="int">
+		delete from  tb_system_param where paramId=#{paramId}
+	</delete>
+	
+</mapper>

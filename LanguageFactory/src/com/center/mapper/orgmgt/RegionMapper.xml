@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.orgmgt.RegionMapper">
+	<sql id="queryRegionWhere">
+		<if test="regionName!=null and regionName!=''">
+			and tor.regionName like CONCAT(CONCAT('%', #{regionName}),'%')
+		</if>
+		<if test="regionParentId != null">
+			and tor.regionParentId = #{regionParentId}
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tor.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tor.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryRegion" parameterType="regionQuery" resultType="Region">
+		select tor.*, tsu.userName createByName
+	    FROM tb_orgmgt_region tor
+		left join tb_system_user tsu on tor.createBy = tsu.userId
+		<where>
+			<include refid="queryRegionWhere"></include>
+		</where>
+		order by tor.regionId desc
+	</select>
+	
+	<!--查询个数-->
+	<select id="queryRegionCount" parameterType="regionQuery" resultType="long">
+		SELECT count(1) FROM tb_orgmgt_region tor
+		left join tb_system_user tsu on tor.createBy = tsu.userId
+		<where>
+			<include refid="queryRegionWhere"></include>
+		</where>
+		order by tor.regionId desc
+	</select>
+	
+	<!-- 分页查询所有未删除信息 -->
+	<select id="queryRegionList" parameterType="regionQuery" resultType="Region">
+		SELECT tor.*,tsu.userName createByName,
+		(select count(1) from tb_orgmgt_region torchild where torchild.regionParentId = tor.regionId) regionChildNum
+		
+		FROM tb_orgmgt_region tor
+		left join tb_system_user tsu on tor.createBy = tsu.userId
+		<where>
+			<include refid="queryRegionWhere"></include>
+		</where>
+		order by tor.regionId desc
+		limit #{start},#{length}
+	</select>
+	
+	<!-- 根据Id获取栏目 -->
+	<select id="queryRegionById" parameterType="int" resultType="Region">
+		select * from tb_orgmgt_region
+		where regionId = #{regionId}
+	</select>
+	
+	<!-- 插入新的数据 -->
+	 <insert id="addRegion" parameterType="Region" useGeneratedKeys="true" keyProperty="regionId">
+		insert into tb_orgmgt_region (regionName,regionParentId,regionStatus,createBy,remark) 
+		values(#{regionName},#{regionParentId},
+		<choose>
+            <when test="regionStatus != null and regionStatus != 0">
+                #{regionStatus},
+            </when>
+            <otherwise>
+                1,
+            </otherwise>
+        </choose>
+		#{createBy},#{remark})
+	</insert> 
+	
+	<!-- 修改数据 -->
+	<update id="updateRegion" parameterType="region">
+		update tb_orgmgt_region
+		<trim prefix="set" suffixOverrides=",">
+			<if test="regionName != null and regionName != ''">
+				regionName = #{regionName},
+			</if>
+			<if test="regionStatus != null and regionStatus != 0">
+				regionStatus = #{regionStatus},
+			</if>
+			<if test="remark != null and remark != ''">
+				remark=#{remark}
+			</if>
+		</trim>
+		WHERE regionId=#{regionId}
+	</update>
+	
+	<!--删除-->
+	<delete id="delRegion" parameterType="int">
+		delete from tb_orgmgt_region where regionId = #{regionId}
+	</delete>
+	
+</mapper> 

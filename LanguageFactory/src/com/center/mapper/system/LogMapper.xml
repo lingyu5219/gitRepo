@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.system.LogMapper">
+	<sql id="queryLogWhere">
+		<if test="logUserId != null and logUserId != 0">
+			and tsu.logUserId = #{logUserId}
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsu.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsu.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryLogList" resultType="log" parameterType="logQuery">
+		select tsl.*,tsu.userName logUserName FROM tb_system_log tsl
+		left join tb_system_user tsu on tsl.logUserId = tsu.userId
+		<where>
+			<include refid="queryLogWhere"></include>
+		</where>
+		order by tsl.logId
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryLogCount" resultType="long" parameterType="logQuery">
+		SELECT count(1) FROM tb_system_log tsl
+		left join tb_system_user tsu on tsl.logUserId = tsu.userId
+		<where>
+			<include refid="queryLogWhere"></include>
+		</where>
+		order by tsl.logId
+	</select>
+	
+	<insert id="addLog" parameterType="log" useGeneratedKeys="true" keyProperty="logId">
+		insert into
+		tb_system_log(logRequest, logUserId, logOperation, remark)
+		values(#{logRequest},#{logUserId},#{logOperation},#{remark})
+	</insert>
+	
+</mapper>

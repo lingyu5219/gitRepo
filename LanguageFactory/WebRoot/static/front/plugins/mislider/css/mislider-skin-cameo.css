@@ -1,0 +1,52 @@
+﻿
+/*  Cameo Skin CSS ========================================= */
+
+.mis-stage {
+    
+}
+    .mis-slider {
+        /*  Slider element does not need to be a specific height
+            Here we use it to create a stylish bar behind slides */
+        margin-top: 120px;
+        height: 80px;
+        text-align:center;
+        background:#eee;
+    }
+        .mis-slider li a {
+        	width:260px;
+        	height:260px;
+            text-decoration: none;
+            display: block;
+       		background:#F29D70;
+       		border:10px solid #F7CDA0;
+       		border-radius: 130px;
+       		margin:0 auto;
+       		position:relative;
+        }  
+        .mis-slider li figcaption {
+        	width:220px;
+        	height:80px;
+            color: #fff;
+            font-size: 42px;
+        	position:absolute;
+        	top:50%;
+        	left:50%;
+        	margin:-40px 0 0 -110px;
+        }
+        .mis-slide {
+            /*  Set width in pixels to restrict width of slides 
+                for multi-item slider, default width is 100%
+                for single-item slider. Use padding to add space 
+                between slides */
+	        width: 330px;
+	        padding: 40px;
+            /*  Undo the margin added by slider element */
+            margin-top: -130px
+        }
+    .mis-nav-list{
+    	display:none;
+    }
+    
+    .mis-nav-buttons a {
+        color: #fff; 
+    }

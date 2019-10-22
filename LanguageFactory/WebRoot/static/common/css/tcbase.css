@@ -1,0 +1,257 @@
+/*全局字体*/
+html,body{
+	font-family:"Microsoft YaHei",微软雅黑,"MicrosoftJhengHei",仿宋,sans-serif;
+}
+select{
+	cursor:pointer;
+}
+/*字体大小、颜色*/
+
+.text-xlarge{
+	font-size:20px;
+}
+.text-large{
+	font-size:16px;
+	line-height:16px;
+}
+.text-normal{
+	font-size:14px;
+}
+.text-small{
+	font-size:12px;
+}
+
+.text-zero{
+	font-size:0px;
+}
+.text-light{
+	color:#ffffff;
+}
+.text-red{
+	color:#ff0000;
+}
+
+.text-primary{
+	color:#3c8dbc !important;
+}
+
+.text-yellow{
+	color:yellow;
+}
+
+/*glyphicon图标大小*/
+.icon-default{
+	cursor:pointer;
+	color:#c0c0c0;
+	margin:0px 6px;
+}
+
+.icon-xlarge{
+	font-size:80px;
+}
+
+.icon-large{
+	font-size:40px;
+}
+.icon-small{
+	font-size:18px;
+}
+
+.padding-no{
+	padding:0;
+}
+
+.padding-lr-30{
+	padding:0 30px;
+}
+
+.margin-no{
+	margin:0 30px;
+}
+
+.padding-small{
+	padding:4px;
+}
+
+.padding-large{
+	padding:8px;
+}
+
+.border-top-primary{
+	border-top:3px solid #3c8dbc !important;
+}
+
+.center-vertical {
+    position:relative;
+    top:50%;
+    transform:translateY(-50%);
+}
+
+/*垂直居中的图片*/
+.img-vertical-middle{
+	display:table;
+	width:100%;
+	text-align:center;
+}
+.img-vertical-middle span{
+	height:100%;
+	display:table-cell;
+	vertical-align: middle;
+}
+.img-vertical-middle img{
+	width:100%;
+}
+/*
+.border-radius-no{
+	border-radius:0;
+}
+.input-daterange input:first-child {
+    border-radius: 0;
+}
+
+.input-daterange input:last-child {
+    border-radius: 0;
+}
+
+*/
+/*
+#detailForm input[readonly]{
+	
+	border:none;
+}
+*/
+.input-group .input-group-addon{
+	background-color: #eee;
+}
+
+.ellipsis{
+	text-overflow: ellipsis; /* for IE */  
+    -moz-text-overflow: ellipsis; /* for Firefox,mozilla */  
+    overflow: hidden;   
+    white-space: nowrap;
+}
+
+/*校验提示信息*/
+.help-block{
+	margin-bottom:0px;
+}
+
+/*覆盖AdminLTE框架content背景*/
+.content-wrapper{
+	background:#fff;
+}
+.content{
+	overflow:hidden;
+	zoom:1;
+}
+.register-box{
+	width:560px;
+	margin:20px auto;
+}
+.content-header{
+	padding:10px;
+	background:#fff !important;
+	border-bottom:1px solid #d2d6de;
+}
+.box{
+	border-top:none;
+	border-radius:0px;
+	box-shadow:0px 0px 15px 3px rgba(0,0,0,0.1);
+}
+.main-footer{
+	padding:0px;
+	background:#555;
+	color:#fff;
+	border-top:none;
+}
+/*登录css*/
+.login-bg, .register-bg{
+	width: 100%;
+	padding:0;
+	overflow: hidden;
+    background:#5AD3EE url(../../images/login_bg.jpg) no-repeat center bottom;
+}
+
+/*友情链接*/
+.friend-link{
+	color:#999;
+	padding:15px 0px 0px 15px;
+}
+.friend-link span{
+	padding:0px 10px;
+}
+.friend-link a{
+	font-size:12px;
+	color:#999;
+}
+.friend-link a:hover{
+	color:#5d9fde;
+}
+.copyright{
+	padding:10px;
+	font-size:14px;
+	color:#ccc;
+}
+/*dataListTable*/
+#dataListTable{
+	text-align:left;
+}
+#dataListTable td{
+	word-break:break-all; 
+	word-wrap:break-word;
+}
+#dataListTable td.child-collapse{
+	cursor:pointer;
+	color:green;
+}
+/*树形菜单*/
+.tree-select{
+	cursor:pointer;
+}
+.tree-menu-hide{
+	display:none;
+}
+.tree-menu {
+	width:100%;
+	max-height:200px;
+	position:relative;
+}
+.tree-menu .treeview{
+	width:100%;
+	max-height:200px;
+	border: 1px solid #ccc;
+    background: #fff;
+	position:absolute;
+	left:0px;
+	top:0px;
+	z-index:100000001;
+	zoom : 1;
+	overflow:auto;
+}
+.tree-menu ul{
+	margin-bottom:0px !important;
+}
+.tree-menu ul li{
+	border:none !important;
+	border-radius:0px !important;
+}
+
+/*媒体资源项*/
+.mediaItem{
+	cursor:pointer;
+}
+.mediaItem .caption{
+	cursor:pointer;
+	overflow: hidden; 
+	white-space: nowrap; 
+	text-overflow: ellipsis;
+}
+/*验证码插件样式*/
+#kaptchaImage{
+	cursor:pointer;
+}
+
+
+.info-box-icon{
+	overflow:hidden;
+}

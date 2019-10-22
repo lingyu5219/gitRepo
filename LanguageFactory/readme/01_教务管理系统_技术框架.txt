@@ -1,0 +1,31 @@
+前台：
+1.jquery
+2.bootstrap
+3.基于bootstrap的框架：AdminLTE
+   https://github.com/Ocramius/AdminLTE
+4.日期插件：bootstrap-datepicker 
+   https://github.com/uxsolutions/bootstrap-datepicker
+5.表格插件：DataTables(基于jquery和bootstrap)
+   https://datatables.net/
+   http://datatables.club/example/diy.html
+6.弹出框插件：jquery-confirm
+   http://craftpip.github.io/jquery-confirm/
+7.下拉框插件：select2
+   https://select2.github.io/
+8.富文本web编辑器：百度UEditor
+   http://ueditor.baidu.com/website/	
+9.单选 复选插件：iCheck
+   http://icheck.fronteed.com/
+10.表单校验插件：jquery-validate
+   https://jqueryvalidation.org/
+以上插件详见工程目录：WebRoot/static/adminLTE/plugins
+***********************************************************************************
+后台：
+1.springMVC
+2.MyBatis
+3.jsp
+4.EL表达式、JSTL标签
+**********************************************************************************
+数据库：MySQL
+
+

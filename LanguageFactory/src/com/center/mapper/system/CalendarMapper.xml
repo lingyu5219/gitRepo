@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.system.CalendarMapper">
+	<sql id="queryCalendarWhere">
+		<if test="calendarDate!=null and calendarDate!=''">
+			calendarDate=#{calendarDate}
+		</if>
+	</sql>
+	<select id="queryCalendarList" resultType="calendarDate"
+		parameterType="calendarDate">
+		select * from tb_system_calendar
+		<where>
+			<include refid="queryCalendarWhere"></include>
+		</where>
+		order by calendarDate
+		limit #{start},#{length}
+	</select>
+	<select id="queryCalendarCount" resultType="long"
+		parameterType="calendarDate">
+		select count(*) from tb_system_calendar
+		<where>
+			<include refid="queryCalendarWhere"></include>
+		</where>
+		order by calendarDate
+	</select>
+	
+	<!-- 插入时间-->
+	<insert id="insertCalendarDate" parameterType="calendarDate">
+		insert into tb_system_calendar(calendarDate,calendarType,calendarDescribe,createBy,remark)
+			value(#{calendarDate},#{calendarType},#{calendarDescribe},#{createBy},#{remark});
+	</insert>
+	
+	<!-- 删除时间 -->
+	<delete id="deleteCalendarById" parameterType="int">
+		delete from tb_system_calendar where calendarId=#{value}
+	</delete>
+	
+	<update id="updateCalendar" parameterType="calendarDate">
+		update tb_system_calendar
+		<trim prefix="set" suffixOverrides=",">
+			<if test="calendarType!=null and calendarType!=''">calendarType=#{calendarType},</if>
+			<if test="calendarDescribe!=null and calendarDescribe!=''">calendarDescribe=#{calendarDescribe},</if>
+			<if test="remark!=null">remark=#{remark},</if>
+		</trim>
+		where calendarDate = #{calendarDate}
+	</update>
+	
+	
+	
+</mapper>

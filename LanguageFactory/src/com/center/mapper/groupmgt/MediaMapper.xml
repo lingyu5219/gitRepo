@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.groupmgt.MediaMapper">
+	<sql id="queryMediaWhere">
+		<if test="mediaTitle != null and mediaTitle != ''">
+			and tgm.mediaTitle like CONCAT(CONCAT('%', #{mediaTitle}),'%')
+		</if>
+		<if test="mediaPattern != null and mediaPattern != 0">
+			and tgm.mediaPattern = #{mediaPattern}
+		</if>
+		<!-- <if test="mediaAlbumId != null and mediaAlbumId != 0">
+			and tgm.mediaAlbumId = #{mediaAlbumId}
+		</if> -->
+		<if test="mediaGartenId != null and mediaGartenId >= 0">
+			and tgm.mediaGartenId = #{mediaGartenId}
+		</if>
+		<if test="mediaIsHome != null and mediaIsHome != 0">
+			and tgm.mediaIsHome = #{mediaIsHome}
+		</if>
+		<if test="mediaIsFront != null and mediaIsFront != 0">
+			and tgm.mediaIsFront = #{mediaIsFront}
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tgm.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tgm.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<!--查询个数-->
+	<select id="queryMediaCount" parameterType="mediaQuery" resultType="long">
+		SELECT count(1) from tb_group_media tgm
+		left join tb_orgmgt_garten tog on tog.gartenId = tgm.mediaGartenId
+		left join tb_system_user tsu on tgm.createBy = tsu.userId
+		<where>
+			<include refid="queryMediaWhere"></include>
+		</where>
+		order by tgm.mediaId desc
+	</select>
+	
+	<!-- 分页查询所有信息 -->
+	<select id="queryMediaList" parameterType="mediaQuery" resultType="Media">
+		select tgm.*, tog.gartenName mediaGartenName, tsu.userName createByName
+		from tb_group_media tgm
+		left join tb_system_user tsu on tgm.createBy = tsu.userId
+		left join tb_orgmgt_garten tog on tog.gartenId = tgm.mediaGartenId
+		<where>
+			<include refid="queryMediaWhere"></include>
+		</where>
+		order by tgm.mediaId desc
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryMedia" parameterType="mediaQuery" resultType="Media">
+		select tgm.*, tog.gartenName mediaGartenName, tsu.userName createByName
+		from tb_group_media tgm
+		left join tb_system_user tsu on tgm.createBy = tsu.userId
+		left join tb_orgmgt_garten tog on tog.gartenId = tgm.mediaGartenId
+		<where>
+			<include refid="queryMediaWhere"></include>
+		</where>
+		order by tgm.mediaId desc
+	</select>
+	
+	<!-- 插入新的数据 -->
+	 <insert id="addMedia" parameterType="Media" useGeneratedKeys="true" keyProperty="mediaId">
+		insert into tb_group_media(mediaTitle, mediaDesc, mediaUrl,mediaPattern,mediaFileName,mediaFileSize,mediaIsHome,mediaGartenId,mediaCoverUrl,mediaIsFront, createBy, remark)
+		values(#{mediaTitle},#{mediaDesc},#{mediaUrl},#{mediaPattern},#{mediaFileName},#{mediaFileSize},#{mediaIsHome},#{mediaGartenId},#{mediaCoverUrl},#{mediaIsFront},#{createBy},#{remark})
+	</insert> 
+	
+	<!-- 修改数据 -->
+	<update id="updateMedia" parameterType="media">
+		update tb_group_media
+		<trim prefix="set" suffixOverrides=",">
+			<if test="mediaTitle != null and mediaTitle != ''">
+				mediaTitle = #{mediaTitle},
+			</if>
+			<if test="mediaDesc != null">
+				mediaDesc = #{mediaDesc},
+			</if>
+			<if test="mediaUrl != null and mediaUrl != ''">
+				mediaUrl = #{mediaUrl},
+			</if>
+			<if test="mediaCoverUrl != null and mediaCoverUrl != ''">
+				mediaCoverUrl = #{mediaCoverUrl},
+			</if>
+			<if test="mediaPattern != null and mediaPattern != 0">
+				mediaPattern = #{mediaPattern},
+			</if>
+			<!-- <if test="mediaAlbumId != null and mediaAlbumId != 0">
+				mediaAlbumId = #{mediaAlbumId},
+			</if> -->
+			<if test="mediaGartenId != null">
+				mediaGartenId = #{mediaGartenId},
+			</if>
+			<if test="mediaIsHome != null and mediaIsHome != 0">
+				mediaIsHome = #{mediaIsHome},
+			</if>
+			<if test="mediaIsFront != null and mediaIsFront != 0">
+				mediaIsFront = #{mediaIsFront},
+			</if>
+			<if test="mediaFileName != null and mediaFileName != ''">
+				mediaFileName = #{mediaFileName},
+			</if>
+			<if test="mediaFileSize != null and mediaFileSize != 0">
+				mediaFileSize = #{mediaFileSize},
+			</if>
+			<if test="remark != null">
+				remark=#{remark}
+			</if>
+		</trim>
+		WHERE mediaId=#{mediaId}
+	</update>
+	
+	<!--删除-->
+	<delete id="delMedia" parameterType="int">
+		delete from tb_group_media where mediaId = #{mediaId}
+	</delete>
+	
+</mapper> 

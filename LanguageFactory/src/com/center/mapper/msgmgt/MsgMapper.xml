@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.msgmgt.MsgMapper">
+	<sql id="queryMsgWhere">
+		<if test="noticeTitle != null and noticeTitle != ''">
+			and tsn.noticeTitle like CONCAT(CONCAT('%', #{noticeTitle}),'%')
+		</if>
+		<if test="noticeState != null and noticeState != 0">
+			and tsn.noticeState = #{noticeState}
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsn.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsn.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryMsg" parameterType="noticeQuery" resultType="notice">
+		select tsn.* from tb_system_notice tsn 
+		where not exists(
+		    select 1 from tb_msgmgt_msglog tmm
+		    where tmm.noticeId = tsn.noticeId
+		    and tmm.createBy = #{createBy}
+		)
+		and tsn.noticeState = 2
+		order by tsn.noticeId desc
+	</select>
+	
+	<select id="queryMsgList" parameterType="noticeQuery" resultType="notice">
+		select tsn.*, (
+		    select 1 from tb_msgmgt_msglog tmm 
+		    where tmm.noticeId = tsn.noticeId and tmm.createBy = #{createBy}
+		) readStatus 
+		from tb_system_notice tsn
+		<where>
+			<include refid="queryMsgWhere"></include>
+		</where> 
+		order by tsn.noticeId desc
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryMsgCount" parameterType="noticeQuery" resultType="long">
+		select count(1) from tb_system_notice tsn
+		<where>
+			<include refid="queryMsgWhere"></include>
+		</where> 
+	</select>
+	
+	<select id="queryMsgLogCount" parameterType="notice" resultType="long">
+		select count(1) from tb_msgmgt_msglog where createBy = #{createBy} and noticeId = #{noticeId}
+	</select>
+	
+	<insert id="addMsgLog" parameterType="notice" useGeneratedKeys="true" keyProperty="logId">
+		insert into tb_msgmgt_msglog(noticeId,createBy)
+		values(#{noticeId},#{createBy})
+	</insert>
+	
+	<delete id="delMsgLog" parameterType="int">
+		delete from tb_msgmgt_msglog where noticeId = #{noticeId} 
+	</delete>
+	
+</mapper>

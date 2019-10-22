@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.cms.ContentMapper">
+	<sql id="queryContentWhere">
+		<if test="contentTitle != null and contentTitle != ''">
+			and tcc.contentTitle like CONCAT(CONCAT('%', #{contentTitle}),'%')
+		</if>
+		<if test="contentState != null and contentState != 0">
+			and tcc.contentState = #{contentState}
+		</if>
+		<if test="contentColumnId != null and contentColumnId != 0">
+			and tcc.contentColumnId = #{contentColumnId}
+		</if>
+		<if test="contentType != null and contentType != 0">
+			and tcc.contentType = #{contentType}
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tcc.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tcc.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryContent" parameterType="int" resultType="content">
+		select * from tb_cms_content where contentId = #{contentId}
+	</select>
+	
+	<select id="queryContentList" parameterType="contentQuery" resultType="content">
+		select tcc.*, tsu.userName createByName, tcol.columnName contentColumnName
+		from tb_cms_content tcc
+		left join tb_system_user tsu on tcc.createBy = tsu.userId
+		left join tb_cms_column tcol on tcc.contentColumnId = tcol.columnId
+		<where>
+			<include refid="queryContentWhere"></include>
+		</where> 
+		order by tcc.contentId desc
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryContentCount" parameterType="contentQuery" resultType="long">
+		select count(1) from tb_cms_content tcc
+		left join tb_system_user tsu on tcc.createBy = tsu.userId
+		left join tb_cms_column tcol on tcc.contentColumnId = tcol.columnId
+		<where>
+			<include refid="queryContentWhere"></include>
+		</where>
+		order by tcc.contentId desc
+	</select>
+	
+	<insert id="addContent" parameterType="content" useGeneratedKeys="true" keyProperty="contentId">
+		insert into tb_cms_content(contentTitle,contentSubTitle,contentType,contentBody,contentUrl,contentState,contentColumnId,createBy,remark)
+		values(#{contentTitle},#{contentSubTitle},#{contentType},#{contentBody},#{contentUrl},#{contentState},#{contentColumnId},#{createBy},#{remark})
+	</insert>
+	
+	<delete id="delContent" parameterType="int">
+		delete from tb_cms_content where contentId = #{contentId} 
+	</delete>
+	
+	<update id="updateContent" parameterType="content">
+		update tb_cms_content
+		<trim prefix="set" suffixOverrides=",">
+			<if test="contentTitle != null and contentTitle != ''">
+				contentTitle = #{contentTitle},
+			</if>
+			<if test="contentSubTitle != null">
+				contentSubTitle = #{contentSubTitle},
+			</if>
+			<if test="contentType != null and contentType != 0">
+				contentType = #{contentType},
+			</if>
+			<if test="contentBody != null">
+				contentBody = #{contentBody},
+			</if>
+			<if test="contentUrl != null">
+				contentUrl = #{contentUrl},
+			</if>
+			<if test="contentState != null and contentState != 0">
+				contentState = #{contentState},
+			</if>
+			<if test="contentColumnId != null and contentColumnId != 0">
+				contentColumnId = #{contentColumnId},
+			</if>
+			<if test="remark != null">
+				remark = #{remark},
+			</if>
+		</trim>
+		where contentId = #{contentId}
+	</update>
+	
+</mapper>

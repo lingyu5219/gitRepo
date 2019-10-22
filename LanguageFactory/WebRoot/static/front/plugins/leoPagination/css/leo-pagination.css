@@ -1,0 +1,66 @@
+.leo-pagination{
+	margin: 0;
+    white-space: nowrap;
+    text-align: center;
+	
+}
+
+.leo-pagination ul{
+	display: inline-block;
+}
+
+.leo-pagination ul li{
+	display: inline;
+	
+}
+
+.leo-pagination ul li a{
+	width:28px;
+	height:28px;
+	line-height:28px;
+	font-size:14px;
+	margin:5px 5px;
+	display:block;
+	float:left;
+	color:#4FADAE;
+    text-decoration: none;
+	cursor: pointer;
+	background-color: #fff;
+	box-shadow: 0px 2px 16px 0px rgba(07, 20, 41, 0.3);
+}
+
+.leo-pagination ul li.number.active a{
+    color: #fff;
+    background-color: #4FADAE;
+}
+
+.leo-pagination ul li a:hover{
+    color: #fff;
+    background-color: #4FADAE;
+    box-shadow: 0px 2px 16px 0px rgba(07, 20, 41, 0.5);
+}
+
+.leo-pagination ul li.first a{
+	background:#ffffff url("../images/left-arrow.png") center center no-repeat;
+}
+
+.leo-pagination ul li.first a:hover{
+	background:#4FADAE url("../images/left-arrow-white.png") center center no-repeat;
+}
+
+.leo-pagination ul li.last a{
+	background:#ffffff url("../images/right-arrow.png") center center no-repeat;
+}
+.leo-pagination ul li.last a:hover{
+	background:#4FADAE url("../images/right-arrow-white.png") center center no-repeat;
+}
+
+.leo-pagination ul li.previous a{
+	background:#fff url(../images/org_sprite.png) -158px -183px no-repeat;
+}
+
+.leo-pagination ul li.next a{
+	background:#fff url(../images/org_sprite.png) -105px -183px no-repeat;
+}
+
+

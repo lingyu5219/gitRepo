@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.groupmgt.ClassTypeMapper">
+	
+	<insert id="addClassType" parameterType="com.center.po.groupmgt.ClassType" useGeneratedKeys="true" keyProperty="classTypeId">
+		insert into tb_group_classtype(classTypeName,description,createBy,remark)
+		values(#{classTypeName},#{description},#{createBy},#{remark})
+	</insert>
+	<select id="getClassTypeList" resultType="com.center.po.groupmgt.ClassType">
+		SELECT c.* ,u.userName createByName
+		FROM db_kindergarten.tb_group_classtype c
+		left join tb_system_user u on c.createBy = u.userId
+		where 1=1
+		<if test="description != null and description!=''">
+			and c.description like CONCAT(CONCAT('%', #{description}),'%')
+		</if>
+		<if test="classTypeName != null and classTypeName != ''">
+			and c.classTypeName like '%${classTypeName}%'
+		</if>
+		<if test="description != null and description != ''">
+			and c.description like '%${description}%'
+		</if>
+		<if test="startTime != null and startTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{startTime},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTime != null and endTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{endTime},'%Y-%m-%d')
+			]]>
+		</if>
+		 order by classTypeId
+		limit #{start},#{length}
+	</select>
+	
+	<select id="count" resultType="java.lang.Long">
+		select count(0) 
+		FROM db_kindergarten.tb_group_classtype c
+		left join tb_system_user u on c.createBy = u.userId
+		where 1=1
+		<if test="description != null and description!=''">
+			and c.description like CONCAT(CONCAT('%', #{description}),'%')
+		</if>
+		<if test="classTypeName != null and classTypeName != ''">
+			and c.classTypeName like '%${classTypeName}%'
+		</if>
+		<if test="description != null and description != ''">
+			and c.description like '%${description}%'
+		</if>
+		<if test="startTime != null and startTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{startTime},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTime != null and endTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{endTime},'%Y-%m-%d')
+			]]>
+		</if>
+	</select>
+	
+	<update id="updateClassType">
+		update tb_group_classtype set classTypeName=#{classTypeName},description=#{description},remark=#{remark}
+		where classTypeId = #{classTypeId}
+	</update>
+	
+	<delete id="deleteClassTypeById">
+		delete from tb_group_classtype where classTypeId = #{classTypeId}
+	</delete>
+	
+	<select id="getSelectList" resultType="java.util.Map">
+		select classTypeId,classTypeName from tb_group_classtype
+	</select>
+	
+	<select id="queryClassTypeByGartenId" parameterType="int" resultType="classType">
+		select tgct.*
+		from tb_group_classtype  tgct
+		where tgct.classTypeId in(
+			select classtypeId from tb_group_class where gartenId = #{gartenId} group by classtypeId
+		)
+	</select>
+</mapper>

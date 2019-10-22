@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.orgmgt.GartenMapper">
+
+	<sql id="queryGartenWhere">
+		<if test="gartenName!=null and gartenName!=''">
+			and tog.gartenName like CONCAT(CONCAT('%', #{gartenName}),'%')
+		</if>
+		<if test="gartenAddress!=null and gartenAddress!=''">
+			and tog.gartenAddress like CONCAT(CONCAT('%', #{gartenAddress}),'%')
+		</if>
+		<if test="gartenId !=null and gartenId != 0">
+			and tog.gartenId = #{gartenId}
+		</if>
+		<if test="gartenDistrictId !=null and gartenDistrictId != 0">
+			and tog.gartenDistrictId = #{gartenDistrictId}
+		</if>
+		<if test="createTimeBegin!=null and createTimeBegin!=''">
+			<![CDATA[
+			and STR_TO_DATE(tog.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd!=null and createTimeEnd!=''">
+			<![CDATA[
+			and STR_TO_DATE(tog.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+		
+		<!-- 使用 foreach遍历传入ids
+		collection：指定输入 对象中集合属性
+		item：每个遍历生成对象中
+		open：开始遍历时拼接的串
+		close：结束遍历时拼接的串
+		separator：遍历的两个对象中需要拼接的串
+		 -->
+		<!-- 实现  “ and id IN(1,10,16)”拼接 -->
+		<!-- 
+		<if test="ids!=null">
+			<foreach collection="ids" item="user_id" open="and id IN(" close=")" separator=",">
+				每个遍历需要拼接的串
+				#{user_id}
+			</foreach> 
+		</if>
+		-->
+	</sql>
+	
+	<select id="queryGartenById" parameterType="int" resultType="Garten">
+		select tog.*
+		from tb_orgmgt_garten tog
+		where tog.gartenId = #{value}
+	</select>
+	
+	<select id="queryGarten" parameterType="gartenQuery" resultType="Garten">
+		select tog.*, tsu.userName createByName, tor.regionName gartenProvinceName,tor2.regionName gartenCityName,tor3.regionName gartenDistrictName
+		from tb_orgmgt_garten tog
+		left join tb_system_user tsu on tog.createBy = tsu.userId
+		left join tb_orgmgt_region tor on tog.gartenProvinceId = tor.regionId
+		left join tb_orgmgt_region tor2 on tog.gartenCityId = tor2.regionId
+		left join tb_orgmgt_region tor3 on tog.gartenDistrictId = tor3.regionId
+		<where>
+			<include refid="queryGartenWhere"></include>
+		</where>
+		order by tog.gartenId desc
+	</select>
+	
+	<select id="queryGartenList" parameterType="gartenQuery" resultType="Garten">
+		select tog.*, tsu.userName createByName, tor.regionName gartenProvinceName,tor2.regionName gartenCityName,tor3.regionName gartenDistrictName
+		from tb_orgmgt_garten tog
+		left join tb_system_user tsu on tog.createBy = tsu.userId
+		left join tb_orgmgt_region tor on tog.gartenProvinceId = tor.regionId
+		left join tb_orgmgt_region tor2 on tog.gartenCityId = tor2.regionId
+		left join tb_orgmgt_region tor3 on tog.gartenDistrictId = tor3.regionId
+		<where>
+			<include refid="queryGartenWhere"></include>
+		</where>
+		order by tog.gartenId desc
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryGartenCount" parameterType="gartenQuery" resultType="long">
+		select count(1) from tb_orgmgt_garten tog
+		left join tb_system_user tsu on tog.createBy = tsu.userId
+		left join tb_orgmgt_region tor on tog.gartenProvinceId = tor.regionId
+		left join tb_orgmgt_region tor2 on tog.gartenCityId = tor2.regionId
+		left join tb_orgmgt_region tor3 on tog.gartenDistrictId = tor3.regionId
+		<where>
+			<include refid="queryGartenWhere"></include>
+		</where>
+		order by tog.gartenId desc
+	</select>
+	
+	<delete id="delGarten" parameterType="int">
+		delete from tb_orgmgt_garten where gartenId=#{value}
+	</delete>
+	
+	<insert id="addGarten" parameterType="Garten" useGeneratedKeys="true" keyProperty="gartenId">
+		insert into tb_orgmgt_garten
+		(gartenName,gartenEmail,gartenPhone,gartenZipCode,gartenDesc,gartenSpeech,gartenProvinceId,gartenCityId,gartenDistrictId, gartenAddress,gartenLongitude,gartenLatitude,gartenVisitTime,createBy, remark) 
+		values (#{gartenName},#{gartenEmail},#{gartenPhone},#{gartenZipCode},#{gartenDesc},#{gartenSpeech},#{gartenProvinceId},#{gartenCityId},#{gartenDistrictId}, #{gartenAddress},#{gartenLongitude},#{gartenLatitude},#{gartenVisitTime}, #{createBy}, #{remark});
+	</insert>
+	
+	<update id="updateGarten" parameterType="garten">
+ 		update tb_orgmgt_garten
+ 		<trim prefix="set" suffixOverrides=",">
+			<if test="gartenName != null and gartenName != ''">
+				gartenName = #{gartenName},
+			</if>
+			<if test="gartenEmail != null">
+				gartenEmail = #{gartenEmail},
+			</if>
+			<if test="gartenPhone != null">
+				gartenPhone = #{gartenPhone},
+			</if>
+			<if test="gartenZipCode != null">
+				gartenZipCode = #{gartenZipCode},
+			</if>
+			<if test="gartenZipCode != null">
+				gartenZipCode = #{gartenZipCode},
+			</if>
+			<if test="gartenDesc != null">
+				gartenDesc = #{gartenDesc},
+			</if>
+			<if test="gartenSpeech != null">
+				gartenSpeech = #{gartenSpeech},
+			</if>
+			
+			<if test="gartenProvinceId != null and gartenProvinceId != 0">
+				gartenProvinceId = #{gartenProvinceId},
+			</if>
+			<if test="gartenCityId != null and gartenProvinceId != 0">
+				gartenCityId = #{gartenCityId},
+			</if>
+			<if test="gartenDistrictId != null and gartenProvinceId != 0">
+				gartenDistrictId = #{gartenDistrictId},
+			</if>
+			
+			<if test="gartenAddress != null">
+				gartenAddress = #{gartenAddress},
+			</if>
+			<if test="gartenLongitude != null">
+				gartenLongitude = #{gartenLongitude},
+			</if>
+			<if test="gartenLatitude != null">
+				gartenLatitude = #{gartenLatitude},
+			</if>
+			<if test="gartenVisitTime != null">
+				gartenVisitTime = #{gartenVisitTime},
+			</if>
+			
+			
+			
+			<if test="remark != null">
+				remark = #{remark},
+			</if>
+		</trim>
+ 		where gartenId = #{gartenId}
+ 	</update>
+	
+</mapper>

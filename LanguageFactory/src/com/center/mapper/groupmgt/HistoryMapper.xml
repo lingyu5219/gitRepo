@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.groupmgt.HistoryMapper">
+    <sql id="queryHistoryWhere">
+		<if test="historyTitle != null and historyTitle != ''">
+			and tgh.historyTitle like CONCAT(CONCAT('%', #{historyTitle}),'%')
+		</if>
+		<if test="historyDateStart != null and historyDateStart != ''">
+			<![CDATA[
+			and STR_TO_DATE(tgh.historyDate,'%Y-%m-%d') >= STR_TO_DATE(#{historyDateStart},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="historyDateEnd != null and historyDateEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tgh.historyDate,'%Y-%m-%d') <= STR_TO_DATE(#{historyDateEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+    
+	<select id="queryHistoryList" parameterType="historyQuery" resultType="history">
+		select tgh.*, tsu.userName createByName
+		from tb_group_history tgh
+		left join tb_system_user tsu on tgh.createBy = tsu.userId
+		<where>
+			<include refid="queryHistoryWhere"></include>
+		</where>
+		order by tgh.historyDate asc
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryHistoryCount" parameterType="historyQuery" resultType="long">
+		select count(1) 
+		from tb_group_history tgh
+		left join tb_system_user tsu on tgh.createBy = tsu.userId
+		<where>
+			<include refid="queryHistoryWhere"></include>
+		</where>
+		order by tgh.historyDate asc
+	</select>
+	
+	<select id="queryHistory" parameterType="historyQuery" resultType="history">
+		select * from tb_group_history
+		<where>
+			<include refid="queryHistoryWhere"></include>
+		</where>
+		order by historyDate asc
+	</select>
+	
+	<select id="queryHistoryById" parameterType="int" resultType="history">
+		select * from db_kindergarten.tb_group_history where historyId=#{id}
+	</select>
+	
+	<insert id="addHistory" parameterType="history" useGeneratedKeys="true" keyProperty="historyId">
+		insert into tb_group_history(historyTitle,historyContent,historyDate,createBy,remark) 
+		values(#{historyTitle},#{historyContent},#{historyDate},#{createBy},#{remark})
+	</insert>
+	
+	<update id="updateHistory" parameterType="history">
+		update tb_group_history 
+		set historyTitle=#{historyTitle},historyContent=#{historyContent},historyDate=#{historyDate},remark=#{remark} 
+		where historyId=#{historyId}
+	</update>
+	<delete id="delHistory" parameterType="int">
+		delete from tb_group_history where historyId=#{id}
+	</delete>
+</mapper> 

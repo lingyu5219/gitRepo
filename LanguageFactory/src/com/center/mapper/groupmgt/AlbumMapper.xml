@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.groupmgt.AlbumMapper">
+	<sql id="queryAlbumWhere">
+		<if test="albumName!=null and albumName!=''">
+			and tgma.albumName like CONCAT(CONCAT('%', #{albumName}),'%')
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tgma.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tgma.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryAlbum" parameterType="albumQuery" resultType="Album">
+		SELECT tgma.*,tsu.userName createByName FROM tb_group_media_album tgma
+		left join tb_system_user tsu on tgma.createBy = tsu.userId
+		<where>
+			<include refid="queryAlbumWhere"></include>
+		</where>
+		order by tgma.albumId
+	</select>
+	
+	<!--查询个数-->
+	<select id="queryAlbumCount" parameterType="albumQuery" resultType="long">
+		SELECT count(1) FROM tb_group_media_album tgma
+		left join tb_system_user tsu on tgma.createBy = tsu.userId
+		<where>
+			<include refid="queryAlbumWhere"></include>
+		</where>
+		order by tgma.albumId desc
+	</select>
+	
+	<!-- 分页查询所有信息 -->
+	<select id="queryAlbumList" parameterType="albumQuery" resultType="Album">
+		SELECT tgma.*,tsu.userName createByName FROM tb_group_media_album tgma
+		left join tb_system_user tsu on tgma.createBy = tsu.userId
+		<where>
+			<include refid="queryAlbumWhere"></include>
+		</where>
+		order by tgma.albumId desc
+		limit #{start},#{length}
+	</select>
+	
+	<!-- 插入新的数据 -->
+	 <insert id="addAlbum" parameterType="Album" useGeneratedKeys="true" keyProperty="albumId">
+		insert into tb_group_media_album (albumName,createBy,remark) 
+		values(#{albumName},#{createBy},#{remark})
+	</insert> 
+	
+	<!-- 修改数据 -->
+	<update id="updateAlbum" parameterType="album">
+		update tb_group_media_album
+		<trim prefix="set" suffixOverrides=",">
+			<if test="albumName!=null and albumName!=''">
+				albumName = #{albumName},
+			</if>
+			<if test="remark != null">
+				remark=#{remark}
+			</if>
+		</trim>
+		WHERE albumId=#{albumId}
+	</update>
+	
+	<!--删除-->
+	<delete id="delAlbum" parameterType="int">
+		delete from tb_group_media_album where albumId = #{albumId}
+	</delete>
+	
+</mapper> 

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.hrmgt.StaffMapper">
+	
+	<sql id="queryStaffWhere">
+		<if test="staffName!=null and staffName!=''">
+			and ths.staffName like concat(concat('%',#{staffName}),'%')
+		</if>
+		<if test="staffGartenId != null and staffGartenId != 0">
+			and ths.staffGartenId = #{staffGartenId}
+		</if>
+		<if test="positionIds != null and positionIds != ''">
+			<foreach collection="positionIds.split(',')" item="positionId" open="and ths.positionId IN(" close=")" separator=",">
+				#{positionId}
+			</foreach> 
+		</if>
+		
+		<if test="createTimeBegin!=null and createTimeBegin!=''">
+			<![CDATA[
+			and STR_TO_DATE(ths.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd!=null and createTimeEnd!=''">
+			<![CDATA[
+			and STR_TO_DATE(ths.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryStaffCount" parameterType="staffQuery" resultType="long">
+		select count(1)
+		from tb_hrmgt_staff ths
+		left join tb_hrmgt_position thp on ths.positionId = thp.positionId
+		left join tb_orgmgt_garten tog on ths.staffGartenId = tog.gartenId
+		left join tb_system_user tsu2 on ths.createBy = tsu2.userId
+		<where>
+			<include refid="queryStaffWhere"></include>
+		</where>
+		order by ths.staffId desc
+	</select>
+	
+	<select id="queryStaffs" parameterType="staffQuery" resultType="staff">
+		select ths.*, tog.gartenName staffGartenName, thp.positionName, tsu2.userName createByName 
+		from tb_hrmgt_staff ths
+		left join tb_hrmgt_position thp on ths.positionId = thp.positionId
+		left join tb_orgmgt_garten tog on ths.staffGartenId = tog.gartenId
+		left join tb_system_user tsu2 on ths.createBy = tsu2.userId
+		<where>
+			<include refid="queryStaffWhere"></include>
+		</where>
+	</select>
+	
+	<select id="queryStaff" parameterType="int" resultType="staff">
+		select ths.*, tog.gartenName staffGartenName, thp.positionName, tsu2.userName createByName 
+		from tb_hrmgt_staff ths
+		left join tb_hrmgt_position thp on ths.positionId = thp.positionId
+		left join tb_orgmgt_garten tog on ths.staffGartenId = tog.gartenId
+		left join tb_system_user tsu2 on ths.createBy = tsu2.userId
+		where ths.staffId = #{staffId}
+	</select>
+	
+	<select id="queryStaffByName" parameterType="String" resultType="staff">
+		select ths.*, tog.gartenName staffGartenName, thp.positionName, tsu2.userName createByName 
+		from tb_hrmgt_staff ths
+		left join tb_hrmgt_position thp on ths.positionId = thp.positionId
+		left join tb_orgmgt_garten tog on ths.staffGartenId = tog.gartenId
+		left join tb_system_user tsu2 on ths.createBy = tsu2.userId
+		where ths.staffName like concat(concat('%',#{staffName}),'%')
+	</select>
+	<select id="queryStaffByPhone" parameterType="String" resultType="staff">
+		select ths.*, tog.gartenName staffGartenName, thp.positionName, tsu2.userName createByName 
+		from tb_hrmgt_staff ths
+		left join tb_hrmgt_position thp on ths.positionId = thp.positionId
+		left join tb_orgmgt_garten tog on ths.staffGartenId = tog.gartenId
+		left join tb_system_user tsu2 on ths.createBy = tsu2.userId
+		where ths.staffPhone = #{staffPhone}
+	</select>
+	
+	<select id="queryStaffList" parameterType="staffQuery" resultType="staff">
+		select ths.*, tog.gartenName staffGartenName, thp.positionName, tsu2.userName createByName 
+		from tb_hrmgt_staff ths
+		left join tb_hrmgt_position thp on ths.positionId = thp.positionId
+		left join tb_orgmgt_garten tog on ths.staffGartenId = tog.gartenId
+		left join tb_system_user tsu2 on ths.createBy = tsu2.userId
+		<where>
+			<include refid="queryStaffWhere"></include>
+		</where>
+		order by ths.staffId desc
+		limit #{start},#{length}
+	</select>
+	
+	<!-- 插入新的数据 -->
+	<insert id="addStaff" parameterType="staff" useGeneratedKeys="true" keyProperty="staffId">
+		insert into
+		tb_hrmgt_staff(staffName,staffBirthday,staffPhone,staffEmail,positionId,staffGartenId,createBy,remark)
+		values(#{staffName},#{staffBirthday},#{staffPhone},#{staffEmail},#{positionId},#{staffGartenId},#{createBy},#{remark})		
+	</insert>
+
+	<!-- 删除职工信息 -->
+	<delete id="delStaff" parameterType="int">
+		delete from tb_hrmgt_staff where staffId = #{staffId}
+	</delete>
+	
+	<!-- 修改数据 -->
+	<update id="updateStaff" parameterType="staff"> 
+		update tb_hrmgt_staff
+		<trim prefix="set" suffixOverrides=",">
+			<if test="staffName!=null and staffName!=''">
+				staffName = #{staffName},
+			</if>
+			<if test="staffBirthday!=null and staffBirthday!=''">
+				staffBirthday = #{staffBirthday},
+			</if>
+		    <if test="staffPhone!=null and staffPhone!=''">
+				staffPhone = #{staffPhone},
+			</if>
+			<if test="staffEmail!=null and staffEmail!=''">
+				staffEmail = #{staffEmail},
+			</if>
+			<if test="staffPic != null and staffPic != ''">
+				staffPic = #{staffPic},
+			</if>
+			<if test="staffPicName != null and staffPicName != ''">
+				staffPicName = #{staffPicName},
+			</if>
+			<if test="staffPicSize != null and staffPicSize != 0">
+				staffPicSize = #{staffPicSize},
+			</if>
+			<if test="positionId!=null and positionId!=0">
+				positionId = #{positionId},
+			</if>
+			<if test="staffGartenId != null">
+				staffGartenId = #{staffGartenId},
+			</if>
+			<if test="remark!=null and remark!=''">
+				remark = #{remark},
+			</if>
+		</trim>
+		where staffId = #{staffId}
+	</update>
+	
+	<select id="staffPhoneExistNotSelf" resultType="long" parameterType="userQuery">
+		SELECT count(1) FROM tb_hrmgt_staff 
+		where staffPhone = #{staffPhone}
+		and staffId != #{staffId}
+	</select>
+	
+	
+</mapper>

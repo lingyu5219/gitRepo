@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.system.NoticeMapper">
+	<sql id="queryNoticeWhere">
+		<if test="noticeTitle != null and noticeTitle != ''">
+			and tsn.noticeTitle like CONCAT(CONCAT('%', #{noticeTitle}),'%')
+		</if>
+		<if test="noticeState != null and noticeState != 0">
+			and tsn.noticeState = #{noticeState}
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsn.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tsn.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryNotice" parameterType="int" resultType="notice">
+		select * from tb_system_notice where noticeId = #{noticeId}
+	</select>
+	
+	<select id="queryNoticeList" parameterType="noticeQuery" resultType="notice">
+		select tsn.*, tsu.userName createByName from tb_system_notice tsn
+		left join tb_system_user tsu on tsn.createBy = tsu.userId
+		<where>
+			<include refid="queryNoticeWhere"></include>
+		</where> 
+		order by tsn.noticeId desc
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryNoticeCount" parameterType="noticeQuery" resultType="long">
+		select count(1) from tb_system_notice tsn
+		left join tb_system_user tsu on tsn.createBy = tsu.userId
+		<where>
+			<include refid="queryNoticeWhere"></include>
+		</where> 
+		order by tsn.noticeId desc
+	</select>
+	
+	<insert id="addNotice" parameterType="notice" useGeneratedKeys="true" keyProperty="noticeId">
+		insert into tb_system_notice(noticeTitle,noticeContent,noticeState,createBy,remark)
+		values(#{noticeTitle},#{noticeContent},#{noticeState},#{createBy},#{remark})
+	</insert>
+	
+	<delete id="delNotice" parameterType="int">
+		delete from tb_system_notice where noticeId = #{noticeId} 
+	</delete>
+	
+	<update id="updateNotice" parameterType="notice">
+		update tb_system_notice
+		<trim prefix="set" suffixOverrides=",">
+			<if test="noticeTitle != null and noticeTitle != ''">
+				noticeTitle = #{noticeTitle},
+			</if>
+			<if test="noticeContent != null">
+				noticeContent = #{noticeContent},
+			</if>
+			<if test="noticeState != null and noticeState != 0">
+				noticeState = #{noticeState},
+			</if>
+			<if test="remark != null and remark != ''">
+				remark = #{remark},
+			</if>
+		</trim>
+		where noticeId = #{noticeId}
+	</update>
+	
+</mapper>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.gartenmgt.GartenClassMapper">
+
+	<insert id="addGartenClass" parameterType="com.center.po.gartenmgt.GartenClass" useGeneratedKeys="true" keyProperty="classId">
+		insert into tb_group_class(className,year,description,createBy,remark,classTypeId,gartenId,capacity,currentQuantity)
+		values(#{className},#{year},#{description},#{createBy},#{remark},#{classTypeId},#{gartenId},#{capacity},#{currentQuantity})
+	</insert>
+	<select id="getGartenClassList" resultType="com.center.po.gartenmgt.GartenClass">
+		SELECT c.*,u.userName createByName,ct.classTypeName,g.gartenName
+		 FROM db_kindergarten.tb_group_class c
+		 left join tb_system_user u on c.createBy = u.userId
+         left join tb_group_classtype ct on c.classTypeId = ct.classTypeId
+         left join tb_orgmgt_garten g on c.gartenId = g.gartenId
+		where 1=1 
+		 
+		<if test="year != null and year != ''">
+			and year = #{year}
+		</if>
+		<if test="description != null and description!=''">
+			and c.description like CONCAT(CONCAT('%', #{description}),'%')
+		</if>
+		<if test="className != null and className != ''">
+			and className like '%${className}%'
+		</if>
+		<if test="classTypeId != null and classTypeId != ''">
+			and c.classTypeId = #{classTypeId}
+		</if>
+		<if test="gartenId != null and gartenId != ''">
+			and c.gartenId = #{gartenId}
+		</if>
+		<if test="startTime != null and startTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{startTime},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTime != null and endTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{endTime},'%Y-%m-%d')
+			]]>
+		</if>
+		order by c.classId
+		limit #{start},#{length}
+	</select>
+	<select id="count" resultType="java.lang.Long">
+		select count(0) 
+		FROM db_kindergarten.tb_group_class c
+		 left join tb_system_user u on c.createBy = u.userId
+         left join tb_group_classtype ct on c.classTypeId = ct.classTypeId
+         left join tb_orgmgt_garten g on c.gartenId = g.gartenId
+		where 1=1
+		<if test="description != null and description!=''">
+			and c.description like CONCAT(CONCAT('%', #{description}),'%')
+		</if>
+		<if test="className != null and className != ''">
+			and className like '%${className}%'
+		</if>
+		<if test="classTypeId != null and classTypeId != ''">
+			and c.classTypeId = #{classTypeId}
+		</if>
+		<if test="gartenId != null and gartenId != ''">
+			and c.gartenId = #{gartenId}
+		</if>
+		<if test="startTime != null and startTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{startTime},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="endTime != null and endTime != ''">
+			<![CDATA[
+			and STR_TO_DATE(c.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{endTime},'%Y-%m-%d')
+			]]>
+		</if>
+	</select>
+	<update id="updateGartenClass">
+		update tb_group_class set 
+		className=#{className},year=#{year},description=#{description},remark=#{remark},classTypeId=#{classTypeId},gartenId=#{gartenId},capacity=#{capacity},currentQuantity=#{currentQuantity}
+		 where classId = #{classId} ;
+	</update>
+	<delete id="delGartenClassById">
+		delete from tb_group_class where classId = #{classId}
+	</delete>
+</mapper>

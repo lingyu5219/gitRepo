@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.groupmgt.MessageMapper">
+	
+	<sql id="queryMessageWhere">
+		<if test="msgTitle != null and msgTitle != ''">
+			and tgm.msgTitle like concat(concat('%',#{msgTitle}),'%')
+		</if>
+		<if test="msgType != null and msgType != 0">
+			and tgm.msgType = #{msgType}
+		</if>
+		<if test="msgTypeIsNot != null and msgTypeIsNot != 0">
+			<![CDATA[
+				and tgm.msgType <> #{msgTypeIsNot}
+			]]>
+		</if>
+		<if test="msgPattern != null and msgPattern != 0">
+			and tgm.msgPattern = #{msgPattern}
+		</if>
+		<if test="msgGartenId != null and msgGartenId != 0">
+			and tgm.msgGartenId = #{msgGartenId}
+		</if>
+		<if test="isGroup != null and isGroup lt 0">
+		<![CDATA[
+			and tgm.msgGartenId <> -1
+		]]>
+		</if>
+		<if test="createTimeBegin!=null and createTimeBegin!=''">
+			<![CDATA[
+			and STR_TO_DATE(tgm.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd!=null and createTimeEnd!=''">
+			<![CDATA[
+			and STR_TO_DATE(tgm.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryMessageCount" parameterType="messageQuery" resultType="long">
+		select count(1)
+		from tb_group_message tgm 
+		left join tb_system_user tsu on tgm.createBy = tsu.userId
+		left join tb_orgmgt_garten tog on tgm.msgGartenId = tog.gartenId
+        left join tb_group_media tgm2 on tgm.msgVideoId = tgm2.mediaId
+		<where>
+			<include refid="queryMessageWhere"></include>
+		</where>
+		order by tgm.msgId desc
+	</select>
+	
+	<select id="queryMessageList" parameterType="messageQuery" resultType="message">
+		select tgm.*, tsu.username createByName, tog.gartenName msgGartenName, tgm2.mediaUrl msgVideoUrl, tgm2.mediaCoverUrl
+		from tb_group_message tgm 
+		left join tb_system_user tsu on tgm.createBy = tsu.userId
+		left join tb_orgmgt_garten tog on tgm.msgGartenId = tog.gartenId
+        left join tb_group_media tgm2 on tgm.msgVideoId = tgm2.mediaId
+		<where>
+			<include refid="queryMessageWhere"></include>
+		</where>
+		order by tgm.msgId desc
+		limit #{start},#{length}
+	</select>
+	
+	<select id="queryMessageById" parameterType="int" resultType="message">
+		select tgm.*, tsu.username createByName, tog.gartenName msgGartenName, tgm2.mediaUrl msgVideoUrl, tgm2.mediaCoverUrl
+		from tb_group_message tgm 
+		left join tb_system_user tsu on tgm.createBy = tsu.userId
+		left join tb_orgmgt_garten tog on tgm.msgGartenId = tog.gartenId
+        left join tb_group_media tgm2 on tgm.msgVideoId = tgm2.mediaId
+        where tgm.msgId = #{msgId}
+	</select>
+	
+	<!-- 插入新的数据 -->
+	<insert id="addMessage" parameterType="message" useGeneratedKeys="true" keyProperty="msgId">
+		insert into tb_group_message(msgTitle, msgType, msgPattern, msgGartenId, msgContent, msgVideoId, createBy,remark)
+		values(#{msgTitle},#{msgType},#{msgPattern},#{msgGartenId},#{msgContent},
+		<choose>
+            <when test="msgVideoId != null and msgVideoId != 0">
+				#{msgVideoId},
+            </when>
+            <otherwise>
+                null,
+            </otherwise>
+        </choose>
+		#{createBy},#{remark})		
+	</insert>
+
+	<!-- 删除职工信息 -->
+	<delete id="delMessage" parameterType="int">
+		delete from tb_group_message where msgId = #{msgId}
+	</delete>
+	
+	<!-- 修改数据 -->
+	<update id="updateMessage" parameterType="message"> 
+		update tb_group_message
+		<trim prefix="set" suffixOverrides=",">
+			<if test="msgTitle != null and msgTitle != ''">
+				msgTitle = #{msgTitle},
+			</if>
+			<if test="msgType != null and msgType != 0">
+				msgType = #{msgType},
+			</if>
+			<if test="msgPattern != null and msgPattern != 0">
+				msgPattern = #{msgPattern},
+			</if>
+			<if test="msgGartenId != null">
+				msgGartenId = #{msgGartenId},
+			</if>
+			<if test="msgContent != null">
+				msgContent = #{msgContent},
+			</if>
+			<choose>
+	            <when test="msgVideoId != null and msgVideoId != 0">
+					msgVideoId = #{msgVideoId},
+	            </when>
+	            <otherwise>
+	                msgVideoId = null,
+	            </otherwise>
+	        </choose>
+			<if test="remark!=null and remark!=''">
+				remark = #{remark},
+			</if>
+		</trim>
+		where msgId = #{msgId}
+	</update>
+</mapper>

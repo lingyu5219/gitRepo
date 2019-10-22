@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.cms.ColumnMapper">
+	<sql id="queryColumnWhere">
+		<if test="columnName!=null and columnName!=''">
+			and tcc.columnName like CONCAT(CONCAT('%', #{columnName}),'%')
+		</if>
+		<if test="columnParentId != null">
+			and tcc.columnParentId = #{columnParentId}
+		</if>
+		<if test="columnEnable != null and columnEnable != 0">
+			and tcc.columnEnable = #{columnEnable}
+		</if>
+		<if test="columnId != null and columnId != 0">
+			and tcc.columnId = #{columnId}
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tcc.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tcc.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryColumn" parameterType="columnQuery" resultType="Column">
+		SELECT tcc.*,tsu.userName createByName,
+		(select min(tccmin.columnSort) from tb_cms_column tccmin where tccmin.columnParentId = tcc.columnParentId) columnSortMin,
+		(select max(tccmax.columnSort) from tb_cms_column tccmax where tccmax.columnParentId = tcc.columnParentId) columnSortMax
+		
+		FROM tb_cms_column tcc
+		left join tb_system_user tsu on tcc.createBy = tsu.userId
+		<where>
+			<include refid="queryColumnWhere"></include>
+		</where>
+		order by tcc.columnSort asc
+	</select>
+	
+	<!--查询个数-->
+	<select id="queryColumnCount" parameterType="columnQuery" resultType="long">
+		SELECT count(1) FROM tb_cms_column tcc
+		left join tb_system_user tsu on tcc.createBy = tsu.userId
+		<where>
+			<include refid="queryColumnWhere"></include>
+		</where>
+		order by tcc.columnSort asc
+	</select>
+	
+	<!-- 分页查询所有未删除信息 -->
+	<select id="queryColumnList" parameterType="columnQuery" resultType="Column">
+		SELECT tcc.*,tsu.userName createByName,
+		(select min(tccmin.columnSort) from tb_cms_column tccmin where tccmin.columnParentId = tcc.columnParentId) columnSortMin,
+		(select max(tccmax.columnSort) from tb_cms_column tccmax where tccmax.columnParentId = tcc.columnParentId) columnSortMax,
+		(select count(1) from tb_cms_column tccchild where tccchild.columnParentId = tcc.columnId) columnChildNum
+		
+		FROM tb_cms_column tcc
+		left join tb_system_user tsu on tcc.createBy = tsu.userId
+		<where>
+			<include refid="queryColumnWhere"></include>
+		</where>
+		order by tcc.columnSort asc
+		limit #{start},#{length}
+	</select>
+	
+	<!-- 根据Id获取栏目 -->
+	<select id="queryColumnById" parameterType="int" resultType="Column">
+		select * from tb_cms_column
+		where columnId = #{columnId}
+	</select>
+	
+	<!-- 查询前一条数据 -->
+	<select id="queryPreColumn" parameterType="int" resultType="Column">
+		<![CDATA[
+	    select tcc.* from tb_cms_column tcc join tb_cms_column tcc1
+		on tcc.columnSort < tcc1.columnSort
+		and tcc.columnParentId = tcc1.columnParentId
+		and tcc1.columnId = #{columnId}
+		order by tcc.columnSort desc
+		limit 1
+		]]>
+	</select>
+	
+	<!-- 查询后一条数据 -->
+	<select id="queryNextColumn" parameterType="int" resultType="Column">
+		<![CDATA[
+	    select tcc.* from tb_cms_column tcc join tb_cms_column tcc1
+		on tcc.columnSort > tcc1.columnSort
+		and tcc.columnParentId = tcc1.columnParentId
+		and tcc1.columnId = #{columnId}
+		order by tcc.columnSort asc
+		limit 1
+		]]>
+	</select>
+	
+	<!-- 插入新的数据 -->
+	 <insert id="addColumn" parameterType="Column" useGeneratedKeys="true" keyProperty="columnId">
+		insert into tb_cms_column (columnName,columnParentId,columnUrl,columnSort,columnEnable,createBy,remark) 
+		values(#{columnName},#{columnParentId},#{columnUrl},
+		<choose>
+            <when test="columnSort != null and columnSort != 0">
+                #{columnSort},
+            </when>
+            <otherwise>
+                fun_cms_column_sort_max(#{columnParentId}) + 1,
+            </otherwise>
+        </choose>
+		#{columnEnable},#{createBy},#{remark})
+	</insert> 
+	
+	<!-- 修改数据 -->
+	<update id="updateColumn" parameterType="column">
+		update tb_cms_column
+		<trim prefix="set" suffixOverrides=",">
+			<if test="columnName!=null and columnName!=''">
+				columnName = #{columnName},
+			</if>
+			<if test="columnUrl!=null and columnUrl!=''">
+				columnUrl = #{columnUrl},
+			</if>
+			<if test="columnEnable!=null">
+				columnEnable = #{columnEnable},
+			</if>
+			<if test="columnSort!=null">
+				columnSort = #{columnSort},
+			</if>
+			<if test="remark != null and remark != ''">
+				remark=#{remark}
+			</if>
+		</trim>
+		WHERE columnId=#{columnId}
+	</update>
+	
+	<!--删除-->
+	<delete id="delColumn" parameterType="int">
+		delete from tb_cms_column where columnId = #{columnId}
+	</delete>
+	
+</mapper> 

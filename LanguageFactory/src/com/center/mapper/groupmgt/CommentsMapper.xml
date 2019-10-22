@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.center.mapper.groupmgt.CommentsMapper">
+	<sql id="queryCommentsWhere">
+		<if test="commentsBy != null and commentsBy != ''">
+			and tgc.commentsBy = #{commentsBy}
+		</if>
+		<if test="commentsEmail != null and commentsEmail != ''">
+			and tgc.commentsEmail = #{commentsEmail}
+		</if>
+		<if test="commentsPhone != null and commentsPhone != ''">
+			and tgc.commentsPhone = #{commentsPhone}
+		</if>
+		<if test="createTimeBegin != null and createTimeBegin != ''">
+			<![CDATA[
+			and STR_TO_DATE(tgc.createTime,'%Y-%m-%d') >= STR_TO_DATE(#{createTimeBegin},'%Y-%m-%d')
+			]]>
+		</if>
+		<if test="createTimeEnd != null and createTimeEnd != ''">
+			<![CDATA[
+			and STR_TO_DATE(tgc.createTime,'%Y-%m-%d') <= STR_TO_DATE(#{createTimeEnd},'%Y-%m-%d')
+			]]>
+		</if>
+	</sql>
+	
+	<select id="queryComments" parameterType="commentsQuery" resultType="Comments">
+		select tgc.* from tb_group_comments tgc
+		<where>
+			<include refid="queryCommentsWhere"></include>
+		</where>
+		order by tgc.commentsId
+	</select>
+	
+	<!--查询个数-->
+	<select id="queryCommentsCount" parameterType="commentsQuery" resultType="long">
+		SELECT count(1) FROM tb_group_comments tgc
+		<where>
+			<include refid="queryCommentsWhere"></include>
+		</where>
+		order by tgc.commentsId desc
+	</select>
+	
+	<!-- 分页查询所有信息 -->
+	<select id="queryCommentsList" parameterType="commentsQuery" resultType="Comments">
+		select tgc.* from tb_group_comments tgc
+		<where>
+			<include refid="queryCommentsWhere"></include>
+		</where>
+		order by tgc.commentsId desc
+		limit #{start},#{length}
+	</select>
+	
+	<!-- 插入新的数据 -->
+	 <insert id="addComments" parameterType="Comments" useGeneratedKeys="true" keyProperty="commentsId">
+		insert into tb_group_comments (commentsTitle,commentsContent,commentsBy,commentsEmail,commentsPhone,commentsAddress,remark) 
+		values(#{commentsTitle},#{commentsContent},#{commentsBy},#{commentsEmail},#{commentsPhone},#{commentsAddress},#{remark})
+	</insert> 
+	
+	<!-- 修改数据 -->
+	<update id="updateComments" parameterType="comments">
+		update tb_group_comments
+		<trim prefix="set" suffixOverrides=",">
+			<if test="commentsTitle != null and commentsTitle != ''">
+				commentsTitle = #{commentsTitle},
+			</if>
+			<if test="commentsContent != null and commentsContent != ''">
+				commentsContent = #{commentsContent},
+			</if>
+			<if test="commentsBy != null and commentsBy != ''">
+				commentsBy = #{commentsBy},
+			</if>
+			<if test="commentsEmail != null and commentsEmail != ''">
+				commentsEmail = #{commentsEmail},
+			</if>
+			<if test="commentsPhone != null and commentsPhone != ''">
+				commentsPhone = #{commentsPhone},
+			</if>
+			<if test="commentsAddress != null and commentsAddress != ''">
+				commentsAddress = #{commentsAddress},
+			</if>
+			<if test="remark != null">
+				remark=#{remark}
+			</if>
+		</trim>
+		WHERE commentsId=#{commentsId}
+	</update>
+	
+	<!--删除-->
+	<delete id="delComments" parameterType="int">
+		delete from tb_group_comments where commentsId = #{commentsId}
+	</delete>
+	
+</mapper> 
