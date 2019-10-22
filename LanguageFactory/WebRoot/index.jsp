@@ -10,6 +10,8 @@ request.setAttribute("basePath", basePath);
 		<meta charset="utf-8"/>
 		<script type="text/javascript">
 			window.location.href="${basePath}front/index";
+			
+			
 		</script>
 	</head>
 	<body>
