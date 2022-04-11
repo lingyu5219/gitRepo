@@ -38,11 +38,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      * 通过以下userDetailsService方法new LeoUserDetailsService对象并通过@Bean交给spring容器管理
      * @return
      */
-    @Bean
-    @Override
-    protected UserDetailsService userDetailsService() {
-        return new LeoUserDetailsService();
-    }
+//    @Bean
+//    @Override
+//    protected UserDetailsService userDetailsService() {
+//        return new LeoUserDetailsService();
+//    }
 
     /**
      * 实现方式4：在实现方式1的基础上，去掉LeoUserDetailsService，直接使用下面configure方法
